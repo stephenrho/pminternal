@@ -76,7 +76,7 @@ to another sample of the same size from the same population; see references). Th
 bias-corrected estimates (see below). It is important that the fit or model_fun provided implement
 the entire model development procedure, including any hyperparameter tuning and/or variable selection.
 
-## Method
+\bold{method}
 \describe{
 \item{boot_optimism}{ (default) estimates optimism for each score and subtracts from apparent score (score calculated
 with the original/development model evaluated on the original sample). A new model is fit using the same procedure

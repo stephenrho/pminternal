@@ -19,7 +19,6 @@
 #' @export
 #'
 #' @examples
-#' library(pminternal)
 #' set.seed(456)
 #' # simulate data with two predictors that interact
 #' dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)
@@ -82,7 +81,6 @@ prediction_stability <- function(x, bounds=.95){
 #' @export
 #'
 #' @examples
-#' library(pminternal)
 #' set.seed(456)
 #' # simulate data with two predictors that interact
 #' dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)
@@ -150,7 +148,7 @@ calibration_stability <- function(x, calib_args){
   return(invisible(curves))
 }
 
-#' Mean absolute predictor error (MAPE) stability across bootstrap replicates
+#' Mean absolute predictor error (MAPE) stability plot
 #'
 #' @description
 #' A MAPE (in)stability plot shows mean absolute predictor error (average absolute difference between original
@@ -168,7 +166,6 @@ calibration_stability <- function(x, calib_args){
 #' @export
 #'
 #' @examples
-#' library(pminternal)
 #' set.seed(456)
 #' # simulate data with two predictors that interact
 #' dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)
@@ -204,4 +201,128 @@ mape_stability <- function(x){
   out <- list('individual_mape' = individual_mape, 'average_mape' = average_mape)
 
   return(invisible(out))
+}
+
+#' Classification instability plot
+#'
+#' @description
+#' Classification instability plot shows the relationship between original model predicted risk
+#' and the classification instability index (CII). The CII is the proportion of bootstrap replicates
+#' where the predicted class (0 if p <= threshold; 1 if p > threshold) is different to that
+#' obtained from the original model. Those with risk predictions around the threshold will exhibit
+#' elevated CII but an unstable model will exhibit high CII across a range of risk precictions.
+#' See Riley and Collins (2023).
+#'
+#' @param x an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")
+#' @param threshold predicted risks above the threshold get a predicted 'class' of 1, otherwise 0.
+#'
+#' @return plots classification (in)stability.
+#' Invisibly returns estimates of CII for each observation.
+#'
+#' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+#'
+#' @export
+#'
+#' @examples
+#' set.seed(456)
+#' # simulate data with two predictors that interact
+#' dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)
+#' mean(dat$y)
+#' dat$LP <- NULL # remove linear predictor
+#'
+#' # fit a (misspecified) logistic regression model
+#' m1 <- glm(y ~ ., data=dat, family="binomial")
+#'
+#' # internal validation of m1 via bootstrap optimism with 20 resamples
+#' # B = 20 for example but should be >= 200 in practice
+#' m1_iv <- validate(m1, method="boot_optimism", B=20)
+#'
+#' classification_stability(m1_iv, threshold=.2)
+#'
+classification_stability <- function(x, threshold){
+  stabil <- get_stability(x)
+  stabil <- stabil$stability
+
+  p_orig <- stabil[, 1]
+  c_orig <- p_orig > threshold
+  c_boot <- stabil[, -1] > threshold
+
+  # classification instability
+  ci <- apply(c_boot, 2, function(pcla) c_orig == pcla)
+  cii <- 1-apply(ci, 1, mean)
+
+  xlim <- range(p_orig)
+  ylim <- c(0, max(cii))
+  plot(p_orig, cii, type = "p", pch = 16, col=grey(.5, .5),
+          xlim=xlim, ylim=ylim, xlab="Predicted risk from development model",
+          ylab="Classification Instability Index")
+  abline(v = threshold, lty=2)
+
+  return(invisible(cii))
+}
+
+#' Plot decision curve stability across bootstrap replicates
+#'
+#' @description
+#' A decision curve (in)stability plot shows decision curves for bootstrap
+#' models evaluated on original outcome. A stable model should produce
+#' curves that differ minimally from the 'apparent' curve.
+#' See Riley and Collins (2023).
+#'
+#' @param x an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")
+#' @param thresholds points at which to evaluate the decision curves (see \code{dcurves::dca})
+#'
+#' @return plots decision curve (in)stability.
+#' Invisibly returns a list containing data for each curve. These are returned from \code{dcurves::dca}.
+#' The first element of this list is the apparent curve (original model on original outcome).
+#'
+#' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+#'
+#' @export
+#'
+#' @examples
+#' set.seed(456)
+#' # simulate data with two predictors that interact
+#' dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)
+#' mean(dat$y)
+#' dat$LP <- NULL # remove linear predictor
+#'
+#' # fit a (misspecified) logistic regression model
+#' m1 <- glm(y ~ ., data=dat, family="binomial")
+#'
+#' # internal validation of m1 via bootstrap optimism with 20 resamples
+#' # B = 20 for example but should be >= 200 in practice
+#' m1_iv <- validate(m1, method="boot_optimism", B=20)
+#'
+#' dcurve_stability(m1_iv)
+#'
+dcurve_stability <- function(x, thresholds = seq(0, .99, by=0.01)){
+
+  stabil <- get_stability(x)
+  y <- stabil$y # original outcome
+  stabil <- stabil$stability
+
+  # make calibration curves
+  curves <- apply(stabil, 2, function(p){
+    dc <- suppressMessages(dcurves::dca(y ~ p, data=data.frame(y=y, p=p),
+                                        thresholds = thresholds))
+    curve <- dc$dca
+    #subset(curve, label == "p")
+    curve[curve$label == "p",]
+  })
+
+  ylim <- range(unlist(lapply(curves, function(x) x$net_benefit)))
+  xlim <- range(thresholds)
+  # max(unlist(curves))
+  plot(NA, xlim=xlim, ylim=ylim, xlab="Predicted risk", ylab="Net Benefit")
+  l <- lapply(rev(seq(length(curves))), function(dc){
+    with(curves[[dc]], lines(threshold, net_benefit, lty=if(dc>1) 1 else 2,
+                             col=if(dc>1) grey(.5, .3) else "black", lwd=if(dc>1) 1 else 2))
+  })
+  legend(x=xlim[2], y=ylim[2], legend = c("Original", "Bootstrap"),
+         lty=2:1, col=c("black", grey(.5, 1)),
+         lwd=2:1, xjust = 1)
+  abline(h=0, lty=2)
+
+  return(invisible(curves))
 }

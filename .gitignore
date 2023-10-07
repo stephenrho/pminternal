@@ -1,1 +1,9 @@
 .Rproj.user
+.Rproj.user/
+.Rhistory
+.Rdata
+inst/doc
+/doc/
+/Meta/
+cran-comments.md
+CRAN-SUBMISSION

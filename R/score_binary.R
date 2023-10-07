@@ -16,7 +16,39 @@
 #' original model evaluated on the original data. Dots can be used to supply additional arguments to
 #' user-defined functions.
 #'
-#' @return a named vector of scores
+#' @details
+#' The following measures are returned in a named vector.
+#'
+#' \describe{
+#' \item{C}{the c-statistic (aka area under the ROC curve). Probability that randomly selected
+#' observation with y = 1 with have higher p compared to randomly selected y = 0.}
+#' \item{Brier}{mean squared error - mean((y - p)^2)}
+#' \item{Intercept}{Intercept from a logistic calibration model: glm(y ~ 1 + qlogis(p), family="binomial")}
+#' \item{Slope}{Slope from a logistic calibration model: glm(y ~ 1 + qlogis(p), family="binomial")}
+#' \item{Eavg}{average absolute difference between p and calibration curve
+#' (aka integrated calibration index or ICI).}
+#' \item{E50}{median absolute difference between p and calibration curve}
+#' \item{E90}{90th percentile absolute difference between p and calibration curve}
+#' \item{Emax}{maximum absolute difference between p and calibration curve}
+#' \item{ECI}{average squared difference between p and calibration curve. Estimated
+#' calibration index (Van Hoorde et al. 2015)}
+#' \item{cal_plot}{if eval is specified (via calib_args), values for
+#' plotting apparent and bias-corrected calibration curves are returned (see \code{\link{cal_plot}}).
+#' By default these are omitted from the summary printed (see \code{\link{summary.internal_validate}}).}
+#' }
+#'
+#' Logistic calibration and other calibration metrics from non-linear calibration curves
+#' assessing 'moderate-calibration' (Eavg, E50, E90, Emax, ECI; see references) are calculated
+#' via the \code{pmcalibration} package. The default settings can be modifed by passing
+#' calib_args to \code{\link{validate}} call. calib_args should be a named list corresponding to
+#' arguments to \code{pmcalibration::pmcalibration}.
+#'
+#' @return a named vector of scores (see Details)
+#'
+#' @references Austin PC, Steyerberg EW. (2019) The Integrated Calibration Index (ICI) and related metrics for quantifying the calibration of logistic regression models. \emph{Statistics in Medicine}. 38, pp. 1–15. https://doi.org/10.1002/sim.8281
+#' @references Van Hoorde, K., Van Huffel, S., Timmerman, D., Bourne, T., Van Calster, B. (2015). A spline-based tool to assess and visualize the calibration of multiclass risk predictions. \emph{Journal of Biomedical Informatics}, 54, pp. 283-93
+#' @references Van Calster, B., Nieboer, D., Vergouwe, Y., De Cock, B., Pencina M., Steyerberg E.W. (2016). A calibration hierarchy for risk models was defined: from utopia to empirical data. \emph{Journal of Clinical Epidemiology}, 74, pp. 167-176
+#'
 #' @export
 #'
 #' @examples
@@ -24,8 +56,6 @@
 #' y <- rbinom(length(p), 1, p)
 #' score_binary(y = y, p = p)
 score_binary <- function(y, p, ...){
-
-  # TODO: add logistic intercept/slope
 
   dots <- list(...)
 
@@ -67,8 +97,14 @@ score_binary <- function(y, p, ...){
 
   cal <- do.call(pmcalibration::pmcalibration, calib_args)
 
+  logcal <- pmcalibration::logistic_cal(y = y, p = p)
+  CIL <- logcal$calibration_intercept$coefficients
+  # return CIL?
+  logcalcoef <- logcal$calibration_slope$coefficients
+  names(logcalcoef) <- c("Intercept", "Slope")
+
   brier <- mean((y - p)^2)
-  names(brier) <- "brier"
+  names(brier) <- "Brier"
   auc <- as.numeric(suppressMessages(pROC::auc(response = y, predictor = p)))
   names(auc) <- "C"
 
@@ -80,7 +116,7 @@ score_binary <- function(y, p, ...){
     cal_plot <- c()
   }
 
-  scores <- c(brier, auc, cal$metrics, cal_plot)
+  scores <- c(auc, brier, logcalcoef, cal$metrics, cal_plot)
   #names(scores) <- c("brier", "C")
 
   return(scores)

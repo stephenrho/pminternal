@@ -1,0 +1,196 @@
+---
+title: "Getting started with `pminternal`"
+author: "Stephen Rhodes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with `pminternal`}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+
+In developing a clinical prediction model measures of model performance are biased by the fact that were using the same data to fit ('train') the model as evaluate it. Splitting a data into development and validation sets is inefficient. Bootstrapping or cross-validation can be used to estimate bias-corrected measures of model performance. This is known as 'internal validation' and addresses the question: what is the expected performance of a model developed in the same way in a sample selected from the same population? This is not to be confused with 'external validation' which assesses model performance in a different population ('transportability').
+
+`pminternal` is inspired by the functions `validate` and `predab.resample` from the `rms` package. The aim is to provide a package that will work with any user-defined model development procedure (assuming it can be implemented in an R function). The package also implements more recently proposed 'stability plots'. Currently only binary outcomes are supported but a goal is to eventually extend to other outcomes (survival, ordinal).
+
+# Supplying a model via `fit`
+
+`validate` only needs a single argument to run, `fit`. `fit` should be a fitted model that is compatible with `insight::get_data`, `insight::find_response`, `insight::get_call`, and `marginaleffects::get_predict`. Models supported by insight can be found by running `insight::supported_models()` (or run `is_model_supported(fit)`); models supported by `marginaleffects` are here https://marginaleffects.com/articles/supported_models.html. As we're dealing with binary outcomes, not all models listed will be applicable. 
+
+The code below loads the GUSTO-I trial data, selects relevant variables, downsamples to reduce run time, fits a development model (a `glm`), and passes it to `validate`.
+
+```{r setup}
+library(pminternal)
+library(Hmisc)
+
+getHdata("gusto")
+gusto <- gusto[, c("sex", "age", "hyp", "htn", "hrt", "pmi", "ste", "day30")]
+
+gusto$y <- gusto$day30; gusto$day30 <- NULL
+
+set.seed(234)
+gusto <- gusto[sample(1:nrow(gusto), size = 5000),]
+
+mod <- glm(y ~ ., data = gusto, family = "binomial")
+
+mod_iv <- validate(mod, B = 40)
+mod_iv
+
+```
+
+As this `validate` call was run with `method = "boot_optimism"` we are able to assess model stability via the following calls. Note that these stability plots are not based on the estimates of optimism but rather based on predictions from models developed on bootstrapped resampled datasets evaluated on the original/development data. In that sense it is conceptually more related to the bias-corrected estimates obtained from `method = "boot_simple"`. In any case both methods results in the necessary data to make these plots (see also `classification_stability` and `dcurve_stability`).
+
+```{r, fig.height=5, fig.width=6}
+# prediction stability plot with 95% 'stability interval'
+prediction_stability(mod_iv, bounds = .95)
+
+# calibration stability 
+# (using default calibration curve arguments: see pminternal:::cal_defaults())
+calibration_stability(mod_iv)
+
+# mean absolute prediction error (mape) stability 
+# mape = average difference between boot model predictions
+# for original data and original model
+mape <- mape_stability(mod_iv)
+mape$average_mape
+
+```
+
+As a final part to this example. It is possible to get apparent and bias-corrected calibration curves. For this we need to set an additional argument, specifying where to assess the calibration curve (i.e., points on the x-axis) as follows.
+
+```{r, fig.height=5, fig.width=6}
+# find 100 equally spaced points 
+# between the lowest and highest risk prediction
+p <- predict(mod, type="response")
+
+p_range <- seq(min(p), max(p), length.out=100)
+
+mod_iv2 <- validate(mod, B = 40, calib_args=list(eval=p_range))
+mod_iv2
+
+calp <- cal_plot(mod_iv2)
+```
+
+The plotting functions are fairly basic but all invisibly return the data needed to reproduce them as you like. For example, the plot below uses `ggplot2` and adds a histogram of the predicted risk probabilities (stored in `p`) to show their distribution.
+
+```{r, fig.height=5, fig.width=6}
+head(calp)
+
+library(ggplot2)
+
+ggplot(calp, aes(x=predicted)) +
+  geom_abline(lty=2) +
+  geom_line(aes(y=apparent, color="Apparent")) +
+  geom_line(aes(y=bias_corrected, color="Bias-Corrected")) +
+  geom_histogram(data = data.frame(p = p), aes(x=p, y=after_stat(density)*.01),
+                 binwidth = .001, inherit.aes = F, alpha=1/2) +
+  labs(x="Predicted Risk", y="Estimated Risk", color=NULL)
+
+```
+
+# User-defined model development functions
+
+It is important that what is being internally validated is the *entire model development procedure*, including any tuning of hyperparameters, variable selection, and so on. Often a `fit` object will not capture this (or will not be supported).
+
+In the example below we work with a model that is not supported by `insight` or `marginaleffects`: logistic regression with lasso (L1) regularization. The functions we need to specify are `model_fun` and `pred_fun`. 
+
+- `model_fun` should take a single argument, `data`, and return and object that can be used to make predictions with `pred_fun`. `...` should also be added as an argument to allow for optional arguments passed to `validate` (see vignette("pminternal-examples") for more examples of user-defined functions that take optional arguments). `lasso_fun` formats data for `glmnet`, then selects the hyperparameter, `lambda` (controls the degree of regularization), via 10-fold cross-validation, and fits the final model with the 'best' value of `lambda` and returns.
+- `pred_fun` should take two arguments, `model` and `data`, as well as the optional argument(s) `...`. `pred_fun` should work with the model object returned by `model_fun`. `glmnet` objects have their own `predict` method so the function `lasso_predict` simply formats the data and returns the predictions. `predict.glmnet` returns a matrix so we select the first column to return a vector of predicted risks.
+
+```{r}
+library(glmnet)
+
+lasso_fun <- function(data, ...){
+  y <- data$y
+  x <- data[, c('sex', 'age', 'hyp', 'htn', 'hrt', 'pmi', 'ste')]
+  x$sex <- as.numeric(x$sex == "male")
+  x$pmi <- as.numeric(x$pmi == "yes")
+  x <- as.matrix(x)
+  
+  cv <- cv.glmnet(x=x, y=y, alpha=1, nfolds = 10, family="binomial")
+  lambda <- cv$lambda.min
+  
+  glmnet(x=x, y=y, alpha = 1, lambda = lambda, family="binomial")
+}
+
+lasso_predict <- function(model, data, ...){
+  x <- data[, c('sex', 'age', 'hyp', 'htn', 'hrt', 'pmi', 'ste')]
+  x$sex <- as.numeric(x$sex == "male")
+  x$pmi <- as.numeric(x$pmi == "yes")
+  x <- as.matrix(x)
+  
+  predict(model, newx = x, type = "response")[,1]
+}
+```
+
+The code below tests these functions out on `gusto`.
+
+```{r}
+lasso_app <- lasso_fun(gusto)
+lasso_p <- lasso_predict(model = lasso_app, data = gusto)
+```
+
+They work as intended so we can pass these functions to `validate` as follows. Here we are using cross-validation to estimate optimism. Note that the 10-fold cross-validation to select the best value of `lambda` (i.e., hyperparameter tuning) is done on each fold performed by `validate`. 
+
+```{r, fig.height=5, fig.width=6}
+# for calibration plot
+eval <- seq(min(lasso_p), max(lasso_p), length.out=100)
+
+iv_lasso <- validate(method = "cv_optimism", data = gusto, 
+                     outcome = "y", model_fun = lasso_fun, 
+                     pred_fun = lasso_predict, B = 10, 
+                     calib_args=list(eval=eval))
+
+iv_lasso
+
+cal_plot(iv_lasso)
+
+```
+
+# User-defined score functions
+
+The scores returned by `score_binary` should be enough for most clinical prediction model applications but sometimes different measures may be desired. This can be achieved by specifying `score_fun`. This should take two arguments, `y` and `p`, and can take optional arguments. `score_fun` should return a named vector of scores calculated from `y` and `p`. 
+
+The function `sens_spec` takes an optional argument `threshold` that is used to calculate sensitivity and specificity. If `threshold` is not specified it is set to 0.5. 
+
+```{r}
+sens_spec <- function(y, p, ...){
+  # this function supports an optional
+  # arg: threshold (set to .5 if not specified)
+  dots <- list(...)
+  if ("threshold" %in% names(dots)){
+    thresh <- dots[["threshold"]]
+  } else{
+    thresh <- .5
+  }
+  # make sure y is 1/0
+  if (is.logical(y)) y <- as.numeric(y)
+  # predicted 'class'
+  pcla <- as.numeric(p > thresh) 
+
+  sens <- sum(y==1 & pcla==1)/sum(y==1)
+  spec <- sum(y==0 & pcla==0)/sum(y==0)
+
+  scores <- c(sens, spec)
+  names(scores) <- c("Sensitivity", "Specificity")
+  
+  return(scores)
+}
+```
+
+The call to `validate` below uses the `glm` fit from the beginning of this vignette and uses the `sens_spec` function to calculate bias-corrected sensitivity and specificity with a threshold of 0.2 (in this case assessing classification stability would be important).
+
+```{r}
+validate(fit = mod, score_fun = sens_spec, threshold=.2,
+         method = "cv_optimism", B = 10)
+```
+

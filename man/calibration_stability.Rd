@@ -24,7 +24,6 @@ boot calibration curves that differ minimally from the 'apparent' curve.
 See Riley and Collins (2023).
 }
 \examples{
-library(pminternal)
 set.seed(456)
 # simulate data with two predictors that interact
 dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)

@@ -156,6 +156,8 @@ cal_plot(iv_lasso)
 
 ```
 
+For more examples of user defined model functions (including elastic net and random forest) can be found in `vignette("validate-examples")`.
+
 # User-defined score functions
 
 The scores returned by `score_binary` should be enough for most clinical prediction model applications but sometimes different measures may be desired. This can be achieved by specifying `score_fun`. This should take two arguments, `y` and `p`, and can take optional arguments. `score_fun` should return a named vector of scores calculated from `y` and `p`. 

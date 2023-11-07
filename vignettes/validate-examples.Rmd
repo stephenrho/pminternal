@@ -1,0 +1,199 @@
+---
+title: "More `model_fun` examples for `pminternal::validate`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{More `model_fun` examples for `pminternal::validate`}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+`vignette("pminternal")` gives an introduction to the package and writing user-defined model and score functions. This vignette provides more examples of user-defined model functions for what I expect are the most commonly used modeling approaches that would not be supported by the `fit` argument.
+
+```{r setup}
+library(pminternal)
+library(Hmisc)
+
+getHdata("gusto")
+gusto <- gusto[, c("sex", "age", "hyp", "htn", "hrt", "pmi", "ste", "day30")]
+
+gusto$y <- gusto$day30; gusto$day30 <- NULL
+
+set.seed(234)
+gusto <- gusto[sample(1:nrow(gusto), size = 5000),]
+```
+
+## Backward Selection
+
+The function below implements a model selected via backward elimination using AIC. 
+
+```{r}
+
+stepglm <- function(data, ...){
+  m <- glm(y~., data=data, family="binomial")
+  step(m, trace = 0)
+}
+
+steppred <- function(model, data, ...){
+  predict(model, newdata = data, type = "response")
+}
+
+validate(data = gusto, outcome = "y", model_fun = stepglm, 
+         pred_fun = steppred, method = "cv_opt", B = 10)
+
+```
+
+In this situation it is probably best to stick with `lrm`, `fastbw`, and `validate` from the `rms` package (though note differences with default `step` behavior) unless you want the additional calibration metrics offered by `pminternal` or want to specify your own score function (see `vignette("pminternal")`).
+
+## Ridge
+
+`vignette("pminternal")` gives an example of a glm with lasso (L1) penalization. It is simple to modify this to implement ridge (L2) penalization by setting `alpha = 0`.
+
+```{r}
+library(glmnet)
+
+ridge_fun <- function(data, ...){
+  y <- data$y
+  x <- data[, c('sex', 'age', 'hyp', 'htn', 'hrt', 'pmi', 'ste')]
+  x$sex <- as.numeric(x$sex == "male")
+  x$pmi <- as.numeric(x$pmi == "yes")
+  x <- as.matrix(x)
+  
+  cv <- cv.glmnet(x=x, y=y, alpha=0, nfolds = 10, family="binomial")
+  lambda <- cv$lambda.min
+  
+  glmnet(x=x, y=y, alpha = 0, lambda = lambda, family="binomial")
+}
+
+ridge_predict <- function(model, data, ...){
+  # note this is identical to lasso_predict from "pminternal" vignette
+  x <- data[, c('sex', 'age', 'hyp', 'htn', 'hrt', 'pmi', 'ste')]
+  x$sex <- as.numeric(x$sex == "male")
+  x$pmi <- as.numeric(x$pmi == "yes")
+  x <- as.matrix(x)
+  
+  predict(model, newx = x, type = "response")[,1]
+}
+
+validate(method = "cv_optimism", data = gusto, 
+         outcome = "y", model_fun = ridge_fun, 
+         pred_fun = ridge_predict, B = 10)
+
+```
+
+Rather than have two separate functions we could specify an optional argument, `alpha`, that could be supplied to `validate`. If this argument isn't supplied the function below defaults to `alpha = 0`. The chunk below is not evaluated so no output is printed.
+
+```{r, eval = F}
+lognet_fun <- function(data, ...){
+  
+  dots <- list(...)
+  if ("alpha" %in% names(dots)){
+    alpha <- dots[["alpha"]]
+  } else{
+    alpha <- 0
+  }
+  # cat("Using alpha =", alpha, "\n")
+  
+  y <- data$y
+  x <- data[, c('sex', 'age', 'hyp', 'htn', 'hrt', 'pmi', 'ste')]
+  x$sex <- as.numeric(x$sex == "male")
+  x$pmi <- as.numeric(x$pmi == "yes")
+  x <- as.matrix(x)
+  
+  cv <- cv.glmnet(x=x, y=y, alpha = alpha, nfolds = 10, family="binomial")
+  lambda <- cv$lambda.min
+  
+  glmnet(x=x, y=y, alpha = alpha, lambda = lambda, family="binomial")
+}
+
+validate(method = "cv_optimism", data = gusto, 
+         outcome = "y", model_fun = lognet_fun, 
+         pred_fun = ridge_predict, B = 10, alpha = 0.5)
+```
+
+## Elastic Net
+
+To implement a model with an elastic net penalty we need to add the steps to select `alpha`. The function below evaluates `nalpha` equally spaced values of `alpha` between 0 and 1 (inclusive) and selects the values `lambda` and `alpha` that result in the minimum CV binomial deviance (could be changed via `type.measure`). `nalpha` is an optional argument. Note we don't need a new predict function here so `ridge_predict` is used. To save build time the chunk below is not evaluated.
+
+```{r, eval = F}
+enet_fun <- function(data, ...){
+  
+  dots <- list(...)
+  if ("nalpha" %in% names(dots)){
+    nalpha <- dots[["nalpha"]]
+  } else{
+    nalpha <- 21 # 0 to 1 in steps of 0.05
+  }
+  
+  y <- data$y
+  x <- data[, c('sex', 'age', 'hyp', 'htn', 'hrt', 'pmi', 'ste')]
+  x$sex <- as.numeric(x$sex == "male")
+  x$pmi <- as.numeric(x$pmi == "yes")
+  x <- as.matrix(x)
+  
+  # run 10 fold CV for each alpha
+  alphas <- seq(0, 1, length.out = nalpha)
+  res <- lapply(alphas, function(a){
+    cv <- cv.glmnet(x=x, y=y, alpha = a, nfolds = 10, family="binomial")
+    list(lambda = cv$lambda.min, bin.dev = min(cv$cvm))
+  })
+  # select result with min binomial deviance
+  j <- which.min(sapply(res, function(x) x$bin.dev))
+  # produce 'final' model with alpha and lambda
+  glmnet(x=x, y=y, alpha = alphas[j], lambda = res[[j]][["lambda"]], family="binomial")
+}
+
+validate(method = "cv_optimism", data = gusto, 
+         outcome = "y", model_fun = enet_fun, 
+         pred_fun = ridge_predict, B = 10)
+
+```
+
+## Random Forest
+
+In the example below we use the `ranger` package to create our `model_fun` and allow for optional arguments of `num.trees`, `max.depth`, and `min.node.size`; others could be added (see `?ranger`).
+
+```{r}
+library(ranger)
+
+rf_fun <- function(data, ...){
+  
+  dots <- list(...)
+  num.trees <- if ("num.trees" %in% names(dots)) dots[["num.trees"]] else 500
+  max.depth <- if ("max.depth" %in% names(dots)) dots[["max.depth"]] else NULL
+  min.node.size	<- if ("min.node.size" %in% names(dots)) dots[["min.node.size"]] else 1
+  
+  # best to make sure y is a factor where '1' is level 2
+  data$y <- factor(data$y, levels = 0:1)
+  
+  ranger(y~., data = data, probability = T, 
+         num.trees = num.trees, 
+         max.depth = max.depth, 
+         min.node.size = min.node.size)
+}
+
+rf_predict <- function(model, data, ...){
+  predict(model, data = data)$predictions[, 2] 
+}
+
+validate(method = "cv_optimism", data = gusto, 
+         outcome = "y", model_fun = rf_fun, 
+         pred_fun = rf_predict, B = 10)
+
+# instead of unlimited tree depth...
+validate(method = "cv_optimism", data = gusto, 
+         outcome = "y", model_fun = rf_fun, 
+         pred_fun = rf_predict, B = 10, max.depth = 3)
+
+```
+
+
+\
+\
+\

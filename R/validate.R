@@ -105,7 +105,10 @@ validate <- function(fit,
                      score_fun,
                      B,
                      ...){
-  # TODO: print/summary methods...
+  # TODO:
+  # pbapply
+  # add plot arg to validate to automatically include stuff to make cal_plot
+  # make stability plots more flexible?
 
   call <- match.call()
   method <- match.arg(method)

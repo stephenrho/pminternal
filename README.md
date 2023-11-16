@@ -11,7 +11,7 @@ This is a work in progress.
 The goal is to offer a package that can produce bias-corrected
 performance measures for binary outcomes for a range of model
 development approaches available in R (similar to `rms::validate`). Also
-contains function for assessing prediction stability as described here
+contains functions for assessing prediction stability as described here
 <https://doi.org/10.1002/bimj.202200302>.
 
 To install development version:
@@ -58,10 +58,6 @@ mod <- glm(y ~ ., data = dat, family = "binomial")
 #> Apparent   0.0027
 #> Optimism  -0.0038
 #> Corrected  0.0065
-
-# other models can be supplied to fit
-# or users can specify 'model_fun' 
-# see vignette("pminternal") and vignette("validate-examples")
 ```
 
 The other available methods for calculating bias corrected performance
@@ -70,6 +66,47 @@ are the simple bootstrap (`boot_simple`), 0.632 bootstrap optimism
 cross-validation (`cv_average`). Please see `?pminternal::validate` and
 the references therein. Bias corrected calibration curves can also be
 produced (see `cal_plot`).
+
+For models that cannot be supported via `fit`, users are able to specify
+their own model (`model_fun`) and prediction (`pred_fun`) functions as
+shown below. Note that when specifying user-defined model and prediction
+functions the data and outcome must also be provided. It is crucial that
+`model_fun` implements the entire model development procedure (variable
+selection, hyperparameter tuning, etc). For more examples, see
+`vignette("pminternal")` and `vignette("validate-examples")`.
+
+``` r
+# fit a glm with lasso penalty
+library(glmnet)
+#> Loading required package: Matrix
+#> Loaded glmnet 4.1-7
+
+lasso_fun <- function(data, ...){
+  y <- data$y
+  x <- as.matrix(data[, which(colnames(data) != "y")])
+  
+  cv <- cv.glmnet(x=x, y=y, alpha=1, nfolds = 10, family="binomial")
+  lambda <- cv$lambda.min
+  
+  glmnet(x=x, y=y, alpha = 1, lambda = lambda, family="binomial")
+}
+
+lasso_predict <- function(model, data, ...){
+  y <- data$y
+  x <- as.matrix(data[, which(colnames(data) != "y")])
+  
+  predict(model, newx = x, type = "response")[,1]
+}
+
+(val <- validate(data = dat, outcome = "y", 
+                 model_fun = lasso_fun, pred_fun = lasso_predict, 
+                 method = "boot_optimism", B = 100))
+#> It is recommended that B > 200 for bootstrap validation
+#>                C   Brier Intercept Slope   Eavg    E50    E90  Emax   ECI
+#> Apparent  0.8558  0.1427     0.073  1.14 0.0184 0.0178 0.0366 0.040 0.044
+#> Optimism  0.0062 -0.0037     0.015  0.04 0.0025 0.0033 0.0039 0.014 0.016
+#> Corrected 0.8496  0.1463     0.057  1.10 0.0159 0.0144 0.0326 0.026 0.028
+```
 
 The output of `validate` (with `method = "boot_*"`) can be used to
 produce plots for assessing the stability of model predictions (across

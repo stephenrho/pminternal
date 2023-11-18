@@ -76,6 +76,12 @@ to another sample of the same size from the same population; see references). Th
 bias-corrected estimates (see below). It is important that the fit or model_fun provided implement
 the entire model development procedure, including any hyperparameter tuning and/or variable selection.
 
+Note that \code{validate} does very little to check for missing values. If \code{fit} is
+supplied \code{insight::get_data} will extract the data used to fit the model and usually
+this will result in complete cases being used. User-defined model and predict functions can
+be specified to handle missing values among predictor variables. Currently any user supplied data will
+have rows with missing outcome values removed.
+
 \bold{method}
 \describe{
 \item{boot_optimism}{ (default) estimates optimism for each score and subtracts from apparent score (score calculated
@@ -109,9 +115,9 @@ dat$LP <- NULL # remove linear predictor
 # fit a (misspecified) logistic regression model
 m1 <- glm(y ~ ., data=dat, family="binomial")
 
-# internal validation of m1 via bootstrap optimism with 20 resamples
-# B = 20 for example but should be >= 200 in practice
-m1_iv <- validate(m1, method="boot_optimism", B=20)
+# internal validation of m1 via bootstrap optimism with 10 resamples
+# B = 10 for example but should be >= 200 in practice
+m1_iv <- validate(m1, method="boot_optimism", B=10)
 m1_iv
 
 }

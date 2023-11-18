@@ -92,7 +92,7 @@ The output of `validate` (with `method = "boot_*"`) can be used to produce plots
 A prediction (in)stability plot shows predictions from the `B` (in this case 100) bootstrap models applied to the development data.
 
 ```{r stability}
-prediction_stability(val)
+prediction_stability(val, smooth_bounds = TRUE)
 ```
 
 A MAPE plot shows the mean absolute prediction error, which is the difference between the predicted risk from the development model and each of the `B` bootstrap models.

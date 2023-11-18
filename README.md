@@ -49,7 +49,7 @@ mod <- glm(y ~ ., data = dat, family = "binomial")
 
 # calculate bootstrap optimism corrected performance measures
 (val <- validate(fit = mod, method = "boot_optimism", B = 100))
-#> It is recommended that B > 200 for bootstrap validation
+#> It is recommended that B >= 200 for bootstrap validation
 #>                C   Brier Intercept Slope    Eavg     E50     E90    Emax
 #> Apparent  0.8567  0.1423   4.4e-12 1.000  0.0045  0.0039  0.0081  0.0109
 #> Optimism  0.0093 -0.0054   1.7e-02 0.053 -0.0048 -0.0050 -0.0107 -0.0057
@@ -101,7 +101,7 @@ lasso_predict <- function(model, data, ...){
 (val <- validate(data = dat, outcome = "y", 
                  model_fun = lasso_fun, pred_fun = lasso_predict, 
                  method = "boot_optimism", B = 100))
-#> It is recommended that B > 200 for bootstrap validation
+#> It is recommended that B >= 200 for bootstrap validation
 #>                C   Brier Intercept Slope   Eavg    E50    E90  Emax   ECI
 #> Apparent  0.8558  0.1427     0.073  1.14 0.0184 0.0178 0.0366 0.040 0.044
 #> Optimism  0.0062 -0.0037     0.015  0.04 0.0025 0.0033 0.0039 0.014 0.016
@@ -116,7 +116,7 @@ A prediction (in)stability plot shows predictions from the `B` (in this
 case 100) bootstrap models applied to the development data.
 
 ``` r
-prediction_stability(val)
+prediction_stability(val, smooth_bounds = TRUE)
 ```
 
 <img src="man/figures/README-stability-1.png" width="90%" />

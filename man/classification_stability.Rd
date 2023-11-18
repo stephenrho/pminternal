@@ -4,23 +4,37 @@
 \alias{classification_stability}
 \title{Classification instability plot}
 \usage{
-classification_stability(x, threshold)
+classification_stability(x, threshold, xlim, ylim, xlab, ylab, pch, cex, col)
 }
 \arguments{
 \item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
 
-\item{threshold}{predicted risks above the threshold get a predicted 'class' of 1, otherwise 0.}
+\item{threshold}{estimated risks above the threshold get a predicted 'class' of 1, otherwise 0.}
+
+\item{xlim}{x limits (default = range of estimated risks)}
+
+\item{ylim}{y limits (default = c(0, maximum CII))}
+
+\item{xlab}{a title for the x axis}
+
+\item{ylab}{a title for the y axis}
+
+\item{pch}{plotting character (default = 16)}
+
+\item{cex}{controls point size (default = 1)}
+
+\item{col}{color of points (default = grDevices::grey(.5, .5))}
 }
 \value{
 plots classification (in)stability.
 Invisibly returns estimates of CII for each observation.
 }
 \description{
-Classification instability plot shows the relationship between original model predicted risk
+Classification instability plot shows the relationship between original model estimated risk
 and the classification instability index (CII). The CII is the proportion of bootstrap replicates
 where the predicted class (0 if p <= threshold; 1 if p > threshold) is different to that
 obtained from the original model. Those with risk predictions around the threshold will exhibit
-elevated CII but an unstable model will exhibit high CII across a range of risk precictions.
+elevated CII but an unstable model will exhibit high CII across a range of risk predictions.
 See Riley and Collins (2023).
 }
 \examples{
@@ -33,9 +47,9 @@ dat$LP <- NULL # remove linear predictor
 # fit a (misspecified) logistic regression model
 m1 <- glm(y ~ ., data=dat, family="binomial")
 
-# internal validation of m1 via bootstrap optimism with 20 resamples
-# B = 20 for example but should be >= 200 in practice
-m1_iv <- validate(m1, method="boot_optimism", B=20)
+# internal validation of m1 via bootstrap optimism with 10 resamples
+# B = 10 for example but should be >= 200 in practice
+m1_iv <- validate(m1, method="boot_optimism", B=10)
 
 classification_stability(m1_iv, threshold=.2)
 

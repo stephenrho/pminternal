@@ -4,10 +4,24 @@
 \alias{mape_stability}
 \title{Mean absolute predictor error (MAPE) stability plot}
 \usage{
-mape_stability(x)
+mape_stability(x, xlim, ylim, xlab, ylab, pch, cex, col)
 }
 \arguments{
 \item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
+
+\item{xlim}{x limits (default = range of estimated risks)}
+
+\item{ylim}{y limits (default = c(0, maximum mape))}
+
+\item{xlab}{a title for the x axis}
+
+\item{ylab}{a title for the y axis}
+
+\item{pch}{plotting character (default = 16)}
+
+\item{cex}{controls point size (default = 1)}
+
+\item{col}{color of points (default = grDevices::grey(.5, .5))}
 }
 \value{
 plots calibration (in)stability.
@@ -16,8 +30,8 @@ The first element of this list is the apparent curve (original model on original
 }
 \description{
 A MAPE (in)stability plot shows mean absolute predictor error (average absolute difference between original
-predicted risk and predicted risk from B bootstrap models) as a function of apparent
-predicted risk (prediction from original/development model). See Riley and Collins (2023).
+estimated risk and risk from B bootstrap models) as a function of apparent
+estimated risk (prediction from original/development model). See Riley and Collins (2023).
 }
 \examples{
 set.seed(456)
@@ -29,9 +43,9 @@ dat$LP <- NULL # remove linear predictor
 # fit a (misspecified) logistic regression model
 m1 <- glm(y ~ ., data=dat, family="binomial")
 
-# internal validation of m1 via bootstrap optimism with 20 resamples
-# B = 20 for example but should be >= 200 in practice
-m1_iv <- validate(m1, method="boot_optimism", B=20)
+# internal validation of m1 via bootstrap optimism with 10 resamples
+# B = 10 for example but should be >= 200 in practice
+m1_iv <- validate(m1, method="boot_optimism", B=10)
 
 mape_stability(m1_iv)
 

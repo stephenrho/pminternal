@@ -4,12 +4,30 @@
 \alias{dcurve_stability}
 \title{Plot decision curve stability across bootstrap replicates}
 \usage{
-dcurve_stability(x, thresholds = seq(0, 0.99, by = 0.01))
+dcurve_stability(
+  x,
+  thresholds = seq(0, 0.99, by = 0.01),
+  xlim,
+  ylim,
+  xlab,
+  ylab,
+  col
+)
 }
 \arguments{
 \item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
 
 \item{thresholds}{points at which to evaluate the decision curves (see \code{dcurves::dca})}
+
+\item{xlim}{x limits (default = range of thresholds)}
+
+\item{ylim}{y limits (default = range of net benefit)}
+
+\item{xlab}{a title for the x axis}
+
+\item{ylab}{a title for the y axis}
+
+\item{col}{color of points (default = grDevices::grey(.5, .5))}
 }
 \value{
 plots decision curve (in)stability.
@@ -32,9 +50,9 @@ dat$LP <- NULL # remove linear predictor
 # fit a (misspecified) logistic regression model
 m1 <- glm(y ~ ., data=dat, family="binomial")
 
-# internal validation of m1 via bootstrap optimism with 20 resamples
-# B = 20 for example but should be >= 200 in practice
-m1_iv <- validate(m1, method="boot_optimism", B=20)
+# internal validation of m1 via bootstrap optimism with 10 resamples
+# B = 10 for example but should be >= 200 in practice
+m1_iv <- validate(m1, method="boot_optimism", B=10)
 
 dcurve_stability(m1_iv)
 

@@ -51,7 +51,7 @@ By default these are omitted from the summary printed (see \code{\link{summary.i
 
 Logistic calibration and other calibration metrics from non-linear calibration curves
 assessing 'moderate-calibration' (Eavg, E50, E90, Emax, ECI; see references) are calculated
-via the \code{pmcalibration} package. The default settings can be modifed by passing
+via the \code{pmcalibration} package. The default settings can be modified by passing
 calib_args to \code{\link{validate}} call. calib_args should be a named list corresponding to
 arguments to \code{pmcalibration::pmcalibration}.
 }

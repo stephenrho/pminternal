@@ -4,12 +4,39 @@
 \alias{prediction_stability}
 \title{Plot prediction stability across bootstrap replicates}
 \usage{
-prediction_stability(x, bounds = 0.95)
+prediction_stability(
+  x,
+  bounds = 0.95,
+  smooth_bounds = FALSE,
+  xlab,
+  ylab,
+  pch,
+  cex,
+  col,
+  lty,
+  span
+)
 }
 \arguments{
 \item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
 
 \item{bounds}{width of the 'stability interval' (percentiles of the bootstrap model predictions). NULL = do not add bounds to plot.}
+
+\item{smooth_bounds}{if TRUE, use \code{loess} to smooth the bounds (default = FALSE)}
+
+\item{xlab}{a title for the x axis}
+
+\item{ylab}{a title for the y axis}
+
+\item{pch}{plotting character (default = 16)}
+
+\item{cex}{controls point size (default = 0.4)}
+
+\item{col}{color of points (default = grDevices::grey(.5, .5))}
+
+\item{lty}{line type for bounds (default = 2)}
+
+\item{span}{controls the degree of smoothing (see \code{loess}; default = 0.75)}
 }
 \value{
 plots prediction (in)stability. The stability bounds are not smoothed.
@@ -17,10 +44,10 @@ Invisibly returns stability matrix (where column 1 are original predictions)
 that can be used for creating plots with other packages/software.
 }
 \description{
-A prediction (in)stability plot shows predicted risk probabilities from
-models devloped on resampled data evaluated on the original development data
+A prediction (in)stability plot shows estimated risk probabilities from
+models developed on resampled data evaluated on the original development data
 as a function of the 'apparent' prediction (prediction from original/development
-model evalulated on original data). A stable model should produce points that
+model evaluated on original data). A stable model should produce points that
 exhibit minimal dispersion. See Riley and Collins (2023).
 }
 \examples{
@@ -33,9 +60,9 @@ dat$LP <- NULL # remove linear predictor
 # fit a (misspecified) logistic regression model
 m1 <- glm(y ~ ., data=dat, family="binomial")
 
-# internal validation of m1 via bootstrap optimism with 20 resamples
-# B = 20 for example but should be >= 200 in practice
-m1_iv <- validate(m1, method="boot_optimism", B=20)
+# internal validation of m1 via bootstrap optimism with 10 resamples
+# B = 10 for example but should be >= 200 in practice
+m1_iv <- validate(m1, method="boot_optimism", B=10)
 
 prediction_stability(m1_iv)
 

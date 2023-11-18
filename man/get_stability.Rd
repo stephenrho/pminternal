@@ -14,7 +14,7 @@ created with method = "boot_optimism" or "boot_simple".}
 \value{
 a list containing the stability matrix (an n x B+1 matrix.
 Each column contains predictions for p observations. First column contains
-predictions from original model. Other columns are from boostrap models) and
+predictions from original model. Other columns are from bootstrap models) and
 the original binary outcome (y).
 }
 \description{

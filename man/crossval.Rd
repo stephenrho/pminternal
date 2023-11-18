@@ -32,7 +32,7 @@ a list of class \code{internal_cv} containing:
 }
 }
 \description{
-Estimate bias-corrected scores via crossvalidation. CV is used to calculate optimism
+Estimate bias-corrected scores via cross-validation. CV is used to calculate optimism
 which is then subtracted from apparent scores and to calculate average performance in the
 out of sample (held out) data.
 This function is called by \code{\link{validate}}.

@@ -39,7 +39,7 @@
 #'
 #' Logistic calibration and other calibration metrics from non-linear calibration curves
 #' assessing 'moderate-calibration' (Eavg, E50, E90, Emax, ECI; see references) are calculated
-#' via the \code{pmcalibration} package. The default settings can be modifed by passing
+#' via the \code{pmcalibration} package. The default settings can be modified by passing
 #' calib_args to \code{\link{validate}} call. calib_args should be a named list corresponding to
 #' arguments to \code{pmcalibration::pmcalibration}.
 #'
@@ -56,6 +56,15 @@
 #' y <- rbinom(length(p), 1, p)
 #' score_binary(y = y, p = p)
 score_binary <- function(y, p, ...){
+
+  # remove missing
+  missy <- is.na(y); missp <- is.na(p)
+  miss <- missy | missp
+  if (any(miss)){
+    message("score_binary: ", sum(miss), " cases removed for missing values.\n",
+            sum(missy), " missing y; ", sum(missp), " missing p")
+    y <- y[!miss]; p <- p[!miss]
+  }
 
   dots <- list(...)
 

@@ -2,6 +2,14 @@
 #'
 #' @param x an object returned from \code{\link{validate}}. Original call should
 #' have specified 'eval' argument. See \code{\link{score_binary}}.
+#' @param xlim x limits (default = c(0, max of either curve))
+#' @param ylim y limits (default = c(0, max of either curve))
+#' @param xlab a title for the x axis
+#' @param ylab a title for the y axis
+#' @param app_col color of the apparent calibration curve (default = 'black')
+#' @param bc_col color of the bias-corrected calibration curve (default = 'black')
+#' @param app_lty line type of the apparent calibration curve (default = 1)
+#' @param bc_lty line type of the bias-corrected calibration curve (default = 2)
 #'
 #' @return plots apparent and bias-corrected curves. Silently returns a data.frame
 #' that can be used to produce a more 'publication ready' plot. Columns are as
@@ -36,7 +44,9 @@
 #'
 #' cal_plot(m1_iv)
 #'
-cal_plot <- function(x){
+cal_plot <- function(x, xlim, ylim, xlab, ylab,
+                     app_col, bc_col, app_lty, bc_lty){
+
   if (isFALSE(is(x, "internal_validate"))){
     stop("x should be an object returned from call to pminternal::validate")
   }
@@ -59,12 +69,26 @@ cal_plot <- function(x){
 
   lim <- c(0, max(c(bcor, app))*1.1)
 
-  plot(NA, xlim=lim, ylim=lim, xlab="Predicted Probability", ylab="Estimated Probability")
-  abline(a = 0, b = 1, col="lightgrey", lwd=2, lty=3)
-  lines(p, app, lwd=2); lines(p, bcor, lty=2, lwd=2)
-  legend(x = 0, y = lim[2], legend = c("Apparent", "Bias Corrected"), lty = 1:2, lwd=2)
+  # settings
+  if (missing(app_col)) app_col <- "black"
+  if (missing(bc_col)) bc_col <- "black"
+  if (missing(app_lty)) app_lty <- 1
+  if (missing(bc_lty)) bc_lty <- 2
+  if (missing(xlab)) xlab <- "Estimated risk"
+  if (missing(ylab)) ylab <- "Observed risk"
+  if (missing(xlim)) xlim <- lim
+  if (missing(ylim)) ylim <- lim
 
-  out <- data.frame(predicted = p, apparent = app, bias_corrected = bcor, row.names = NULL)
+  plot(NA, xlim=lim, ylim=lim, xlab=xlab, ylab=ylab)
+  abline(a = 0, b = 1, col="lightgrey", lwd=2, lty=3)
+  lines(p, app, lwd=2, lty=app_lty, col=app_col)
+  lines(p, bcor, lty=bc_lty, lwd=2, col=bc_col)
+  legend(x = xlim[1], y = ylim[2], legend = c("Apparent", "Bias Corrected"),
+         col = c(app_col, bc_col), lty = c(app_lty,bc_lty), lwd=2)
+
+  out <- data.frame(predicted = p, apparent = app,
+                    bias_corrected = bcor,
+                    row.names = NULL)
 
   return(invisible(out))
 }

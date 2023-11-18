@@ -46,6 +46,12 @@
 #' bias-corrected estimates (see below). It is important that the fit or model_fun provided implement
 #' the entire model development procedure, including any hyperparameter tuning and/or variable selection.
 #'
+#' Note that \code{validate} does very little to check for missing values. If \code{fit} is
+#' supplied \code{insight::get_data} will extract the data used to fit the model and usually
+#' this will result in complete cases being used. User-defined model and predict functions can
+#' be specified to handle missing values among predictor variables. Currently any user supplied data will
+#' have rows with missing outcome values removed.
+#'
 #' \bold{method}
 #' \describe{
 #' \item{boot_optimism}{ (default) estimates optimism for each score and subtracts from apparent score (score calculated
@@ -90,9 +96,9 @@
 #' # fit a (misspecified) logistic regression model
 #' m1 <- glm(y ~ ., data=dat, family="binomial")
 #'
-#' # internal validation of m1 via bootstrap optimism with 20 resamples
-#' # B = 20 for example but should be >= 200 in practice
-#' m1_iv <- validate(m1, method="boot_optimism", B=20)
+#' # internal validation of m1 via bootstrap optimism with 10 resamples
+#' # B = 10 for example but should be >= 200 in practice
+#' m1_iv <- validate(m1, method="boot_optimism", B=10)
 #' m1_iv
 #'
 validate <- function(fit,
@@ -131,10 +137,12 @@ validate <- function(fit,
             !missing(model_fun), !missing(pred_fun))){
       warning("if fit is specified, data, outcome, model_fun, and pred_fun are ignored")
     }
-    # check class?
+    # check class
+    if (isFALSE(class(fit)[1] %in% insight::supported_models())){
+      stop("fit provided is not a class supported - see insight::supported_models()")
+    }
     data <- insight::get_data(fit)
     outcome <- insight::find_response(fit)
-
     mcall <- insight::get_call(fit)
 
     model_fun <- function(data, ...){
@@ -146,14 +154,28 @@ validate <- function(fit,
 
     pred_fun <- function(model, data, ...){
       #insight::get_predicted(x = model, data = data, ci=NULL)
+      metd <- marginaleffects:::type_dictionary_build()
+      metd <- metd[!duplicated(metd$class), ]
+      if (class(model)[1] %in% metd$class){
+        type <- metd$type[which(class(model)[1] == metd$class)]
+      } else{
+        type <- "response"
+      }
+
       marginaleffects::get_predict(model = model,
                                    newdata = data,
-                                   type = "response")$estimate
+                                   type = type)$estimate
     }
   }
 
   if (missing(score_fun)){
     score_fun <- score_binary
+  }
+
+  missy <- is.na(data[[outcome]])
+  if ( any(missy) ){
+    message("Removing ", sum(missy), " rows with missing outcome")
+    data <- data[which(!missy), ]
   }
 
   # test
@@ -162,7 +184,7 @@ validate <- function(fit,
   score_app <- score_fun(y = data[[outcome]], p = p_app, ...)
 
   if ( method %in% c("boot_optimism", "boot_simple", ".632") ){
-    if (B < 200) message("It is recommended that B > 200 for bootstrap validation")
+    if (B < 200) message("It is recommended that B >= 200 for bootstrap validation")
     m <- if (method == ".632") ".632" else "boot"
     res <- boot_optimism(data = data, outcome = outcome,
                          model_fun = model_fun, pred_fun = pred_fun, score_fun = score_fun,
@@ -228,9 +250,9 @@ validate <- function(fit,
 #' # fit a (misspecified) logistic regression model
 #' m1 <- glm(y ~ ., data=dat, family="binomial")
 #'
-#' # internal validation of m1 via bootstrap optimism with 20 resamples
-#' # B = 20 for example but should be >= 200 in practice
-#' m1_iv <- validate(m1, method="boot_optimism", B=20)
+#' # internal validation of m1 via bootstrap optimism with 10 resamples
+#' # B = 10 for example but should be >= 200 in practice
+#' m1_iv <- validate(m1, method="boot_optimism", B=10)
 #' summary(m1_iv)
 #'
 summary.internal_validate <- function(object, ignore_scores="^cal_plot", ...){

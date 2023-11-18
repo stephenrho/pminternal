@@ -4,11 +4,27 @@
 \alias{cal_plot}
 \title{Plot apparent and bias-corrected calibration curves}
 \usage{
-cal_plot(x)
+cal_plot(x, xlim, ylim, xlab, ylab, app_col, bc_col, app_lty, bc_lty)
 }
 \arguments{
 \item{x}{an object returned from \code{\link{validate}}. Original call should
 have specified 'eval' argument. See \code{\link{score_binary}}.}
+
+\item{xlim}{x limits (default = c(0, max of either curve))}
+
+\item{ylim}{y limits (default = c(0, max of either curve))}
+
+\item{xlab}{a title for the x axis}
+
+\item{ylab}{a title for the y axis}
+
+\item{app_col}{color of the apparent calibration curve (default = 'black')}
+
+\item{bc_col}{color of the bias-corrected calibration curve (default = 'black')}
+
+\item{app_lty}{line type of the apparent calibration curve (default = 1)}
+
+\item{bc_lty}{line type of the bias-corrected calibration curve (default = 2)}
 }
 \value{
 plots apparent and bias-corrected curves. Silently returns a data.frame

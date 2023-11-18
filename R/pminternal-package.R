@@ -8,6 +8,8 @@
 #' @importFrom graphics matplot
 #' @importFrom grDevices grey
 #' @importFrom methods is
+#' @importFrom stats loess
+#' @importFrom stats predict
 #' @importFrom stats quantile
 ## usethis namespace: end
 NULL

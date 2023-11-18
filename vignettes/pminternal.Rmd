@@ -42,12 +42,12 @@ gusto <- gusto[sample(1:nrow(gusto), size = 5000),]
 
 mod <- glm(y ~ ., data = gusto, family = "binomial")
 
-mod_iv <- validate(mod, B = 40)
+mod_iv <- validate(mod, B = 20)
 mod_iv
 
 ```
 
-As this `validate` call was run with `method = "boot_optimism"` we are able to assess model stability via the following calls. Note that these stability plots are not based on the estimates of optimism but rather based on predictions from models developed on bootstrapped resampled datasets evaluated on the original/development data. In that sense it is conceptually more related to the bias-corrected estimates obtained from `method = "boot_simple"`. In any case both methods results in the necessary data to make these plots (see also `classification_stability` and `dcurve_stability`).
+As this `validate` call was run with `method = "boot_optimism"` we are able to assess model stability via the following calls. Note that these stability plots are not based on the estimates of optimism but rather based on predictions from models developed on bootstrapped resampled data sets evaluated on the original/development data. In that sense it is conceptually more related to the bias-corrected estimates obtained from `method = "boot_simple"`. In any case both methods results in the necessary data to make these plots (see also `classification_stability` and `dcurve_stability`).
 
 ```{r, fig.height=5, fig.width=6}
 # prediction stability plot with 95% 'stability interval'
@@ -74,7 +74,7 @@ p <- predict(mod, type="response")
 
 p_range <- seq(min(p), max(p), length.out=100)
 
-mod_iv2 <- validate(mod, B = 40, calib_args=list(eval=p_range))
+mod_iv2 <- validate(mod, B = 20, calib_args=list(eval=p_range))
 mod_iv2
 
 calp <- cal_plot(mod_iv2)
@@ -94,6 +94,38 @@ ggplot(calp, aes(x=predicted)) +
   geom_histogram(data = data.frame(p = p), aes(x=p, y=after_stat(density)*.01),
                  binwidth = .001, inherit.aes = F, alpha=1/2) +
   labs(x="Predicted Risk", y="Estimated Risk", color=NULL)
+
+```
+
+Additional models that could be supplied via `fit` and that I have tested on this gusto example are given below. Please let me know if you run into trouble with a model class that you feel should work with `fit`. The chunk below is not evaluated for build time so does not print any output.
+
+```{r, eval=F}
+### generalized boosted model with gbm
+library(gbm)
+# syntax y ~ . does not work with gbm
+mod <- gbm(y ~ sex + age + hyp + htn + hrt + pmi + ste, 
+           data = gusto, distribution = "bernoulli", interaction.depth = 2)
+
+(gbm_iv <- validate(mod, B = 20))
+
+### generalized additive model with mgcv
+library(mgcv)
+
+mod <- gam(y ~ sex + s(age) + hyp + htn + hrt + pmi + ste, 
+           data = gusto, family = "binomial")
+
+(gam_iv <- validate(mod, B = 20))
+
+mod <- bam(y ~ sex + s(age, bs = "cr") + hyp + htn + hrt + pmi + ste, 
+           data = gusto, family = "binomial")
+
+(bam_iv <- validate(mod, B = 20))
+
+### rms implementation of logistic regression
+mod <- rms::lrm(y ~ ., data = gusto) 
+# not loading rms to avoid conflict with rms::validate...
+
+(lrm_iv <- validate(mod, B = 20))
 
 ```
 
@@ -195,4 +227,3 @@ The call to `validate` below uses the `glm` fit from the beginning of this vigne
 validate(fit = mod, score_fun = sens_spec, threshold=.2,
          method = "cv_optimism", B = 10)
 ```
-

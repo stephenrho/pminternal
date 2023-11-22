@@ -1,3 +1,4 @@
 ^pminternal\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
+vignettes/pminternal-comparisons.Rmd

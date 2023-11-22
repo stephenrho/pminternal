@@ -55,7 +55,9 @@ is used and this should be good for most purposes.}
 
 \item{...}{additional arguments for user-defined functions. Arguments for
 producing calibration curves can be set via 'calib_args' which should be
-a named list (see \code{\link{cal_plot}} and \code{\link{score_binary}}).}
+a named list (see \code{\link{cal_plot}} and \code{\link{score_binary}}).
+For method = "boot_optimism", "boot_simple", or ".632" users can specify a
+\code{cores} argument (e.g., \code{cores = 4}) to run bootstrap samples in parallel.}
 }
 \value{
 an object of class internal_validate containing apparent and bias-corrected

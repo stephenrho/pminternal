@@ -13,7 +13,7 @@
 #' @keywords internal
 get_stability <- function(x){
   if (is(x, "internal_validate")){
-    if (!"stability" %in% names(x$scores)){
+    if (!"stability" %in% names(x$scores) || is.null(x$scores$stability) ){
       stop("stability table not found in internal_validate object. ",
            "Please rerun and set method = 'boot_simple' or 'boot_optimism'.")
     }

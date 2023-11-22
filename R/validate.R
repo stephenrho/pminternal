@@ -38,6 +38,8 @@
 #' @param ... additional arguments for user-defined functions. Arguments for
 #' producing calibration curves can be set via 'calib_args' which should be
 #' a named list (see \code{\link{cal_plot}} and \code{\link{score_binary}}).
+#' For method = "boot_optimism", "boot_simple", or ".632" users can specify a
+#' \code{cores} argument (e.g., \code{cores = 4}) to run bootstrap samples in parallel.
 #'
 #' @details
 #' Internal validation can provide bias-corrected estimates of performance (e.g., C-statistic/AUC)
@@ -196,7 +198,7 @@ validate <- function(fit,
   }
 
   apparent <- res$apparent
-  if (method %in% c("boot_optimism", "boot_simple", ".632", "cv_optimism")){
+  if (method %in% c("boot_optimism", ".632", "cv_optimism")){
     optimism <- res$optimism
     corrected <- res$corrected
   } else{
@@ -277,7 +279,8 @@ summary.internal_validate <- function(object, ignore_scores="^cal_plot", ...){
 #' @rdname print.internal_validatesummary
 #' @export
 print.internal_validatesummary <- function(x, digits = 2, ...){
-  print.data.frame(x, digits = digits)
+  #print.data.frame(x, digits = digits, scientific=F)
+  print(format(round(x, 6), digits = digits, scientific=F))
   return(invisible(x))
 }
 

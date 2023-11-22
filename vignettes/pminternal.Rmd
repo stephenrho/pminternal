@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-In developing a clinical prediction model measures of model performance are biased by the fact that were using the same data to fit ('train') the model as evaluate it. Splitting a data into development and validation sets is inefficient. Bootstrapping or cross-validation can be used to estimate bias-corrected measures of model performance. This is known as 'internal validation' and addresses the question: what is the expected performance of a model developed in the same way in a sample selected from the same population? This is not to be confused with 'external validation' which assesses model performance in a different population ('transportability').
+In developing a clinical prediction model measures of model performance are biased by the fact that were using the same data to fit ('train') the model as evaluate it. Splitting a data into development and validation sets is inefficient. Bootstrapping or cross-validation can be used to estimate bias-corrected measures of model performance. This is known as 'internal validation' and addresses the question: what is the expected performance of a model developed in the same way in a sample selected from the same population? This is not to be confused with 'external validation' which assesses model performance in a different population.
 
 `pminternal` is inspired by the functions `validate` and `predab.resample` from the `rms` package. The aim is to provide a package that will work with any user-defined model development procedure (assuming it can be implemented in an R function). The package also implements more recently proposed 'stability plots'. Currently only binary outcomes are supported but a goal is to eventually extend to other outcomes (survival, ordinal).
 
@@ -139,7 +139,7 @@ In the example below we work with a model that is not supported by `insight` or 
 - `pred_fun` should take two arguments, `model` and `data`, as well as the optional argument(s) `...`. `pred_fun` should work with the model object returned by `model_fun`. `glmnet` objects have their own `predict` method so the function `lasso_predict` simply formats the data and returns the predictions. `predict.glmnet` returns a matrix so we select the first column to return a vector of predicted risks.
 
 ```{r}
-library(glmnet)
+#library(glmnet)
 
 lasso_fun <- function(data, ...){
   y <- data$y
@@ -148,10 +148,10 @@ lasso_fun <- function(data, ...){
   x$pmi <- as.numeric(x$pmi == "yes")
   x <- as.matrix(x)
   
-  cv <- cv.glmnet(x=x, y=y, alpha=1, nfolds = 10, family="binomial")
+  cv <- glmnet::cv.glmnet(x=x, y=y, alpha=1, nfolds = 10, family="binomial")
   lambda <- cv$lambda.min
   
-  glmnet(x=x, y=y, alpha = 1, lambda = lambda, family="binomial")
+  glmnet::glmnet(x=x, y=y, alpha = 1, lambda = lambda, family="binomial")
 }
 
 lasso_predict <- function(model, data, ...){
@@ -160,9 +160,11 @@ lasso_predict <- function(model, data, ...){
   x$pmi <- as.numeric(x$pmi == "yes")
   x <- as.matrix(x)
   
-  predict(model, newx = x, type = "response")[,1]
+  plogis(glmnet::predict.glmnet(model, newx = x)[,1])
 }
 ```
+
+We recommend that you use `::` to refer to functions from particular packages if you want to run bootstrapping in parallel. For cores = 1 (or no cores argument supplied) or cross-validation this will not be an issue and you can use `library`. 
 
 The code below tests these functions out on `gusto`.
 

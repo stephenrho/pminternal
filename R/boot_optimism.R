@@ -63,7 +63,6 @@ boot_optimism <- function(data, outcome,
     score_fun <- score_binary
   }
   # TODO:
-  # - deal with nas in data (impute? predict?)
   # - deal with model fit fails
 
   # apparent
@@ -89,9 +88,21 @@ boot_optimism <- function(data, outcome,
     }
     wt <- 1 - (1/B - apply(W/nomit, 2, sum)/n)
     #wt <- 1 + (apply(W/nomit, 2, sum)/n - 1/B)
+  } else wt <- NULL
+
+  # get cores
+  if ("cores" %in% names(dots)){
+    cores <- dots[["cores"]]
+  } else{
+    cores <- 1
   }
 
-  S <- lapply(seq(B), function(i){
+  cl <- parallel::makeCluster(cores)
+  parallel::clusterExport(cl, varlist = c("B", "data", "indices", "wt", "method",
+                                          "model_fun", "pred_fun", "score_fun"),
+                          envir = environment())
+  S <- pbapply::pblapply(seq(B), function(i){
+  #S <- parallel::parLapply(X = seq(B), fun = function(i){
     # resample
     #data_i <- data[sample(x = nrow(data), replace = T), ]
     data_i <- data[indices[, i], ]
@@ -121,7 +132,10 @@ boot_optimism <- function(data, outcome,
          "score_orig" = score_orig#,
          #"score_boot" = score_boot
     )
-  })
+  }, cl = cl)
+  parallel::stopCluster(cl)
+  #closeAllConnections()
+
   # make output
   opt <- do.call(rbind, lapply(S, function(x) x$optimism))
   opt <- apply(opt, 2, mean)

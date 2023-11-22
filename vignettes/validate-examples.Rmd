@@ -56,7 +56,7 @@ In this situation it is probably best to stick with `lrm`, `fastbw`, and `valida
 `vignette("pminternal")` gives an example of a glm with lasso (L1) penalization. It is simple to modify this to implement ridge (L2) penalization by setting `alpha = 0`.
 
 ```{r}
-library(glmnet)
+#library(glmnet)
 
 ridge_fun <- function(data, ...){
   y <- data$y
@@ -65,10 +65,10 @@ ridge_fun <- function(data, ...){
   x$pmi <- as.numeric(x$pmi == "yes")
   x <- as.matrix(x)
   
-  cv <- cv.glmnet(x=x, y=y, alpha=0, nfolds = 10, family="binomial")
+  cv <- glmnet::cv.glmnet(x=x, y=y, alpha=0, nfolds = 10, family="binomial")
   lambda <- cv$lambda.min
   
-  glmnet(x=x, y=y, alpha = 0, lambda = lambda, family="binomial")
+  glmnet::glmnet(x=x, y=y, alpha = 0, lambda = lambda, family="binomial")
 }
 
 ridge_predict <- function(model, data, ...){
@@ -78,12 +78,21 @@ ridge_predict <- function(model, data, ...){
   x$pmi <- as.numeric(x$pmi == "yes")
   x <- as.matrix(x)
   
-  predict(model, newx = x, type = "response")[,1]
+  plogis(glmnet::predict.glmnet(model, newx = x)[,1])
 }
 
 validate(method = "cv_optimism", data = gusto, 
          outcome = "y", model_fun = ridge_fun, 
          pred_fun = ridge_predict, B = 10)
+
+# the use of package::function in user defined functions 
+# is especially important if you want to run 
+# boot_* or .632 in parallel via cores argument
+
+# e.g.
+# validate(method = ".632", data = gusto, 
+#          outcome = "y", model_fun = ridge_fun, 
+#          pred_fun = ridge_predict, B = 100, cores = 4)
 
 ```
 
@@ -106,10 +115,10 @@ lognet_fun <- function(data, ...){
   x$pmi <- as.numeric(x$pmi == "yes")
   x <- as.matrix(x)
   
-  cv <- cv.glmnet(x=x, y=y, alpha = alpha, nfolds = 10, family="binomial")
+  cv <- glmnet::cv.glmnet(x=x, y=y, alpha = alpha, nfolds = 10, family="binomial")
   lambda <- cv$lambda.min
   
-  glmnet(x=x, y=y, alpha = alpha, lambda = lambda, family="binomial")
+  glmnet::glmnet(x=x, y=y, alpha = alpha, lambda = lambda, family="binomial")
 }
 
 validate(method = "cv_optimism", data = gusto, 
@@ -140,13 +149,13 @@ enet_fun <- function(data, ...){
   # run 10 fold CV for each alpha
   alphas <- seq(0, 1, length.out = nalpha)
   res <- lapply(alphas, function(a){
-    cv <- cv.glmnet(x=x, y=y, alpha = a, nfolds = 10, family="binomial")
+    cv <- glmnet::cv.glmnet(x=x, y=y, alpha = a, nfolds = 10, family="binomial")
     list(lambda = cv$lambda.min, bin.dev = min(cv$cvm))
   })
   # select result with min binomial deviance
   j <- which.min(sapply(res, function(x) x$bin.dev))
   # produce 'final' model with alpha and lambda
-  glmnet(x=x, y=y, alpha = alphas[j], lambda = res[[j]][["lambda"]], family="binomial")
+  glmnet::glmnet(x=x, y=y, alpha = alphas[j], lambda = res[[j]][["lambda"]], family="binomial")
 }
 
 validate(method = "cv_optimism", data = gusto, 
@@ -160,7 +169,7 @@ validate(method = "cv_optimism", data = gusto,
 In the example below we use the `ranger` package to create our `model_fun` and allow for optional arguments of `num.trees`, `max.depth`, and `min.node.size`; others could be added (see `?ranger`).
 
 ```{r}
-library(ranger)
+# library(ranger)
 
 rf_fun <- function(data, ...){
   
@@ -172,10 +181,10 @@ rf_fun <- function(data, ...){
   # best to make sure y is a factor where '1' is level 2
   data$y <- factor(data$y, levels = 0:1)
   
-  ranger(y~., data = data, probability = T, 
-         num.trees = num.trees, 
-         max.depth = max.depth, 
-         min.node.size = min.node.size)
+  ranger::ranger(y~., data = data, probability = T, 
+                 num.trees = num.trees, 
+                 max.depth = max.depth, 
+                 min.node.size = min.node.size)
 }
 
 rf_predict <- function(model, data, ...){

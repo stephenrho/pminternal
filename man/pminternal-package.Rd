@@ -6,7 +6,7 @@
 \alias{pminternal-package}
 \title{pminternal: Internal Validation of Clinical Prediction Models}
 \description{
-Conduct internal validation of a clinical prediction model for a binary outcome. Produce bias corrected performance metrics (c-statistic, calibration slope) via bootstrap (simple bootstrap, bootstrap optimism, .632 optimism) and crossvalidation (CV optimism, CV average). Also includes functions to assess model stability via boostrap resampling. See Steyerberg et al. (2001) \doi{10.1016/s0895-4356(01)00341-9}; Harrell (2015) \doi{10.1007/978-3-319-19425-7}; Riley and Collins (2023) \doi{10.1002/bimj.202200302}
+Conduct internal validation of a clinical prediction model for a binary outcome. Produce bias corrected performance metrics (c-statistic, calibration slope) via bootstrap (simple bootstrap, bootstrap optimism, .632 optimism) and crossvalidation (CV optimism, CV average). Also includes functions to assess model stability via bootstrap resampling. See Steyerberg et al. (2001) \doi{10.1016/s0895-4356(01)00341-9}; Harrell (2015) \doi{10.1007/978-3-319-19425-7}; Riley and Collins (2023) \doi{10.1002/bimj.202200302}
 }
 \seealso{
 Useful links:

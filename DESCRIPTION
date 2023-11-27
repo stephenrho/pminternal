@@ -14,7 +14,7 @@ Description: Conduct internal validation of a clinical prediction model for a bi
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.2.3
-URL: https://github.com/stephenrho/pminternal
+URL: https://github.com/stephenrho/pminternal, https://stephenrho.github.io/pminternal/
 BugReports: https://github.com/stephenrho/pminternal/issues
 Imports: 
     dcurves,

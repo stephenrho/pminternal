@@ -6,8 +6,6 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-This is a work in progress.
-
 The goal is to offer a package that can produce bias-corrected
 performance measures for binary outcomes for a range of model
 development approaches available in R (similar to `rms::validate`). Also
@@ -51,9 +49,9 @@ mod <- glm(y ~ ., data = dat, family = "binomial")
 (val <- validate(fit = mod, method = "boot_optimism", B = 100))
 #> It is recommended that B >= 200 for bootstrap validation
 #>                C   Brier Intercept Slope    Eavg     E50     E90    Emax
-#> Apparent  0.8567  0.1423   4.4e-12 1.000  0.0045  0.0039  0.0081  0.0109
-#> Optimism  0.0093 -0.0054   1.7e-02 0.053 -0.0048 -0.0050 -0.0107 -0.0057
-#> Corrected 0.8474  0.1477  -1.7e-02 0.947  0.0093  0.0089  0.0187  0.0165
+#> Apparent  0.8567  0.1423     0.000 1.000  0.0045  0.0039  0.0081  0.0109
+#> Optimism  0.0093 -0.0054     0.017 0.053 -0.0048 -0.0050 -0.0107 -0.0057
+#> Corrected 0.8474  0.1477    -0.017 0.947  0.0093  0.0089  0.0187  0.0165
 #>               ECI
 #> Apparent   0.0027
 #> Optimism  -0.0038

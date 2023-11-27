@@ -12,6 +12,7 @@ Conduct internal validation of a clinical prediction model for a binary outcome.
 Useful links:
 \itemize{
   \item \url{https://github.com/stephenrho/pminternal}
+  \item \url{https://stephenrho.github.io/pminternal/}
   \item Report bugs at \url{https://github.com/stephenrho/pminternal/issues}
 }
 

@@ -156,10 +156,15 @@ validate <- function(fit,
 
     pred_fun <- function(model, data, ...){
       #insight::get_predicted(x = model, data = data, ci=NULL)
-      metd <- marginaleffects:::type_dictionary_build()
-      metd <- metd[!duplicated(metd$class), ]
-      if (class(model)[1] %in% metd$class){
-        type <- metd$type[which(class(model)[1] == metd$class)]
+      # metd <- marginaleffects:::type_dictionary_build()
+      # metd <- metd[!duplicated(metd$class), ]
+      # if (class(model)[1] %in% metd$class){
+      #   type <- metd$type[which(class(model)[1] == metd$class)]
+      # } else{
+      #   type <- "response"
+      # }
+      if (is(model, "lrm")){
+        type <- "fitted"
       } else{
         type <- "response"
       }

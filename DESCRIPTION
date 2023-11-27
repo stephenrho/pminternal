@@ -1,6 +1,6 @@
 Package: pminternal
 Title: Internal Validation of Clinical Prediction Models
-Version: 0.0.0.9
+Version: 0.0.1
 Authors@R: person(given = "Stephen", family = "Rhodes", 
   email= "steverho89@gmail.com", role=c("aut", "cre", "cph"))
 Maintainer: Stephen Rhodes <steverho89@gmail.com>

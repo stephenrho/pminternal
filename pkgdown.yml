@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   pminternal: pminternal.html
   validate-examples: validate-examples.html
-last_built: 2025-01-30T21:54Z
+last_built: 2025-01-30T21:59Z
 urls:
   reference: https://stephenrho.github.io/pminternal/reference
   article: https://stephenrho.github.io/pminternal/articles

@@ -87,16 +87,16 @@
 <span><span class="co"># calculate bootstrap optimism corrected performance measures</span></span>
 <span><span class="op">(</span><span class="va">val</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/validate.html">validate</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">mod</span>, method <span class="op">=</span> <span class="st">"boot_optimism"</span>, B <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; It is recommended that B &gt;= 200 for bootstrap validation</span></span>
-<span><span class="co">#&gt;           Apparent  Optimism Corrected   n</span></span>
-<span><span class="co">#&gt; C           0.8567 -0.000194    0.8569 100</span></span>
-<span><span class="co">#&gt; Brier       0.1423  0.000041    0.1423 100</span></span>
-<span><span class="co">#&gt; Intercept   0.0000 -0.007510    0.0075 100</span></span>
-<span><span class="co">#&gt; Slope       1.0000  0.000004    1.0000 100</span></span>
-<span><span class="co">#&gt; Eavg        0.0045  0.013274   -0.0088 100</span></span>
-<span><span class="co">#&gt; E50         0.0039  0.011028   -0.0072 100</span></span>
-<span><span class="co">#&gt; E90         0.0081  0.029486   -0.0214 100</span></span>
-<span><span class="co">#&gt; Emax        0.0109  0.036793   -0.0259 100</span></span>
-<span><span class="co">#&gt; ECI         0.0027  0.058583   -0.0558 100</span></span></code></pre></div>
+<span><span class="co">#&gt;           Apparent Optimism Corrected   n</span></span>
+<span><span class="co">#&gt; C           0.8567   0.0093    0.8474 100</span></span>
+<span><span class="co">#&gt; Brier       0.1423  -0.0054    0.1477 100</span></span>
+<span><span class="co">#&gt; Intercept   0.0000   0.0175   -0.0175 100</span></span>
+<span><span class="co">#&gt; Slope       1.0000   0.0529    0.9471 100</span></span>
+<span><span class="co">#&gt; Eavg        0.0045  -0.0048    0.0093 100</span></span>
+<span><span class="co">#&gt; E50         0.0039  -0.0050    0.0089 100</span></span>
+<span><span class="co">#&gt; E90         0.0081  -0.0107    0.0187 100</span></span>
+<span><span class="co">#&gt; Emax        0.0109  -0.0057    0.0165 100</span></span>
+<span><span class="co">#&gt; ECI         0.0027  -0.0038    0.0065 100</span></span></code></pre></div>
 <p>The other available methods for calculating bias corrected performance are the simple bootstrap (<code>boot_simple</code>), 0.632 bootstrap optimism (<code>.632</code>), optimism via cross-validation (<code>cv_optimism</code>), and regular cross-validation (<code>cv_average</code>). Please see <code><a href="reference/validate.html">?pminternal::validate</a></code> and the references therein. Bias corrected calibration curves can also be produced (see <code>cal_plot</code>).</p>
 <p>For models that cannot be supported via <code>fit</code>, users are able to specify their own model (<code>model_fun</code>) and prediction (<code>pred_fun</code>) functions as shown below. Note that when specifying user-defined model and prediction functions the data and outcome must also be provided. It is crucial that <code>model_fun</code> implements the entire model development procedure (variable selection, hyperparameter tuning, etc). For more examples, see <code><a href="articles/pminternal.html">vignette("pminternal")</a></code> and <code><a href="articles/validate-examples.html">vignette("validate-examples")</a></code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -109,10 +109,10 @@
 <span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">$</span><span class="va">y</span></span>
 <span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">data</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"y"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span>  </span>
-<span>  <span class="va">cv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html" class="external-link">cv.glmnet</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">x</span>, y<span class="op">=</span><span class="va">y</span>, alpha<span class="op">=</span><span class="fl">1</span>, nfolds <span class="op">=</span> <span class="fl">10</span>, family<span class="op">=</span><span class="st">"binomial"</span><span class="op">)</span></span>
+<span>  <span class="va">cv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/glmnet/man/cv.glmnet.html" class="external-link">cv.glmnet</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">x</span>, y<span class="op">=</span><span class="va">y</span>, alpha<span class="op">=</span><span class="fl">1</span>, nfolds <span class="op">=</span> <span class="fl">10</span>, family<span class="op">=</span><span class="st">"binomial"</span><span class="op">)</span></span>
 <span>  <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="va">cv</span><span class="op">$</span><span class="va">lambda.min</span></span>
 <span>  </span>
-<span>  <span class="fu"><a href="https://glmnet.stanford.edu/reference/glmnet.html" class="external-link">glmnet</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">x</span>, y<span class="op">=</span><span class="va">y</span>, alpha <span class="op">=</span> <span class="fl">1</span>, lambda <span class="op">=</span> <span class="va">lambda</span>, family<span class="op">=</span><span class="st">"binomial"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/glmnet/man/glmnet.html" class="external-link">glmnet</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">x</span>, y<span class="op">=</span><span class="va">y</span>, alpha <span class="op">=</span> <span class="fl">1</span>, lambda <span class="op">=</span> <span class="va">lambda</span>, family<span class="op">=</span><span class="st">"binomial"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">lasso_predict</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">model</span>, <span class="va">data</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
@@ -126,19 +126,16 @@
 <span>                 model_fun <span class="op">=</span> <span class="va">lasso_fun</span>, pred_fun <span class="op">=</span> <span class="va">lasso_predict</span>, </span>
 <span>                 method <span class="op">=</span> <span class="st">"boot_optimism"</span>, B <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; It is recommended that B &gt;= 200 for bootstrap validation</span></span>
-<span><span class="co">#&gt; Warning in boot_optimism(data = data, outcome = outcome, model_fun = model_fun, : The following warnings occurred during the call to validate</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; 1: Fitting terminated with step failure - check results carefully (1 occurrences)</span></span>
-<span><span class="co">#&gt;           Apparent  Optimism Corrected   n</span></span>
-<span><span class="co">#&gt; C            0.856 -0.001116     0.857 100</span></span>
-<span><span class="co">#&gt; Brier        0.143  0.000467     0.142 100</span></span>
-<span><span class="co">#&gt; Intercept    0.073 -0.004588     0.077 100</span></span>
-<span><span class="co">#&gt; Slope        1.141 -0.000072     1.141 100</span></span>
-<span><span class="co">#&gt; Eavg         0.018  0.007291     0.011 100</span></span>
-<span><span class="co">#&gt; E50          0.018  0.005324     0.012 100</span></span>
-<span><span class="co">#&gt; E90          0.037  0.013867     0.023 100</span></span>
-<span><span class="co">#&gt; Emax         0.040  0.025804     0.014 100</span></span>
-<span><span class="co">#&gt; ECI          0.044  0.064001    -0.020 100</span></span></code></pre></div>
+<span><span class="co">#&gt;           Apparent Optimism Corrected   n</span></span>
+<span><span class="co">#&gt; C            0.856   0.0062     0.850 100</span></span>
+<span><span class="co">#&gt; Brier        0.143  -0.0037     0.146 100</span></span>
+<span><span class="co">#&gt; Intercept    0.073   0.0154     0.057 100</span></span>
+<span><span class="co">#&gt; Slope        1.141   0.0400     1.101 100</span></span>
+<span><span class="co">#&gt; Eavg         0.018   0.0025     0.016 100</span></span>
+<span><span class="co">#&gt; E50          0.018   0.0033     0.014 100</span></span>
+<span><span class="co">#&gt; E90          0.037   0.0039     0.033 100</span></span>
+<span><span class="co">#&gt; Emax         0.040   0.0142     0.026 100</span></span>
+<span><span class="co">#&gt; ECI          0.044   0.0160     0.028 100</span></span></code></pre></div>
 <p>The output of <code>validate</code> (with <code>method = "boot_*"</code>) can be used to produce plots for assessing the stability of model predictions (across models developed on bootstrap resamples).</p>
 <p>A prediction (in)stability plot shows predictions from the <code>B</code> (in this case 100) bootstrap models applied to the development data.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">

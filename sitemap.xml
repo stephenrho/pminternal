@@ -1,81 +1,29 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/404.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/articles/pminternal.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/articles/validate-examples.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/index.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/boot_optimism.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/cal_defaults.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/cal_plot.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/calibration_stability.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/classification_stability.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/crossval.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/dcurve_stability.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/get_stability.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/mape_stability.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/pminternal-package.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/prediction_stability.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/print.internal_boot.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/print.internal_cv.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/print.internal_validate.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/print.internal_validatesummary.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/score_binary.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/summary.internal_validate.html</loc>
-  </url>
-  <url>
-    <loc>https://stephenrho.github.io/pminternal/reference/validate.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://stephenrho.github.io/pminternal/404.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/LICENSE-text.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/articles/index.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/articles/pminternal.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/articles/validate-examples.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/authors.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/index.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/boot_optimism.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/cal_defaults.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/cal_plot.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/calibration_stability.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/classification_stability.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/crossval.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/dcurve_stability.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/get_stability.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/index.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/mape_stability.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/pminternal-package.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/prediction_stability.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/print.internal_boot.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/print.internal_cv.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/print.internal_validate.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/print.internal_validatesummary.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/score_binary.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/summary.internal_validate.html</loc></url>
+<url><loc>https://stephenrho.github.io/pminternal/reference/validate.html</loc></url>
 </urlset>
+

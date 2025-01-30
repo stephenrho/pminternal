@@ -7,7 +7,7 @@
 #' @return a list containing the stability matrix (an n x B+1 matrix.
 #' Each column contains predictions for p observations. First column contains
 #' predictions from original model. Other columns are from bootstrap models) and
-#' the original binary outcome (y).
+#' the original binary outcome (y). Unsuccessful resamples are omitted.
 #' @export
 #'
 #' @keywords internal
@@ -32,6 +32,9 @@ get_stability <- function(x){
          "pminternal::boot_optimism (with method = 'boot')")
   }
 
+  # omit NAs
+  stabil <- stabil[, apply(stabil, 2, \(x) !any(is.na(x)))]
+
   return(list(stability = stabil, y = y))
 }
 
@@ -48,3 +51,4 @@ cal_defaults <- function(x=NULL){
               'ci' = 'none', 'transf' = 'logit',
               'eval' = 0))
 }
+

@@ -17,6 +17,8 @@
 #' @param col color of points (default = grDevices::grey(.5, .5))
 #' @param lty line type for bounds (default = 2)
 #' @param span controls the degree of smoothing (see \code{loess}; default = 0.75)
+#' @param subset vector of observations to include (row indices). If dataset is large plotting N points for B bootstrap resamples is demanding. This can be used to select a random subset of observations.
+#' @param plot if FALSE just returns stability matrix
 #'
 #' @return plots prediction (in)stability. The stability bounds are not smoothed.
 #' Invisibly returns stability matrix (where column 1 are original predictions)
@@ -43,7 +45,7 @@
 #' prediction_stability(m1_iv)
 #'
 prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
-                                 xlab, ylab, pch, cex, col, lty, span){
+                                 xlab, ylab, pch, cex, col, lty, span, subset, plot=TRUE){
 
   stabil <- get_stability(x)
   stabil <- stabil$stability
@@ -57,11 +59,14 @@ prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
   if (missing(col)) col <- grey(.5, .3)
   if (missing(xlab)) xlab <- "Estimated risk from development model"
   if (missing(ylab)) ylab <- sprintf("Estimated risk from bootstrap models (n = %i)", b)
+  if (!missing(subset)) stabil <- stabil[subset, ]
 
   # make plot
-  stabil = stabil[order(stabil[,1]), ] # [, 1] = original predictions
-  matplot(stabil[, 1], stabil[, -1], type = "p", pch=pch, cex=cex,
-          col=col, xlab = xlab, ylab = ylab)
+  stabil <- stabil[order(stabil[,1]), ] # [, 1] = original predictions
+  if (plot){
+    matplot(stabil[, 1], stabil[, -1], type = "p", pch=pch, cex=cex,
+            col=col, xlab = xlab, ylab = ylab)
+  }
 
   if (!is.null(bounds)){
     if (length(bounds) > 1 || !is.numeric(bounds) || bounds <= 0 || bounds >= 1) stop("bounds should be a single number (0,1)")
@@ -71,7 +76,9 @@ prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
     if (smooth_bounds){
       lims <- apply(lims, 2, function(x) predict(loess(x ~ stabil[, 1], span = span)))
     }
-    matplot(stabil[, 1], lims, type='l', lty=lty, add = T, col="black")
+    if (plot){
+      matplot(stabil[, 1], lims, type='l', lty=lty, add = T, col="black")
+    }
   }
 
   colnames(stabil)[-1] <- paste0("b", seq(b))
@@ -96,6 +103,8 @@ prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
 #' @param xlab a title for the x axis
 #' @param ylab a title for the y axis
 #' @param col color of lines for bootstrap models (default = grDevices::grey(.5, .3))
+#' @param subset vector of observations to include (row indices). If dataset is large fitting B curves is demanding. This can be used to select a random subset of observations.
+#' @param plot if FALSE just returns curves (see value)
 #'
 #' @return plots calibration (in)stability.
 #' Invisibly returns a list containing data for each curve (p=x-axis, pc=y-axis).
@@ -122,11 +131,16 @@ prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
 #' calibration_stability(m1_iv)
 #'
 calibration_stability <- function(x, calib_args,
-                                  xlim, ylim, xlab, ylab, col){
+                                  xlim, ylim, xlab, ylab, col, subset, plot=TRUE){
 
   stabil <- get_stability(x)
   y <- stabil$y # original outcome
   stabil <- stabil$stability
+
+  if (!missing(subset)){
+    stabil <- stabil[subset, ]
+    y <- y[subset]
+  }
 
   if (missing(calib_args)){
     calib_args <- cal_defaults()
@@ -170,14 +184,16 @@ calibration_stability <- function(x, calib_args,
   if (missing(col)) col <- grey(.5, .3)
 
   # max(unlist(curves))
-  plot(NA, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab)
-  l <- lapply(rev(seq(length(curves))), function(cc){
-    with(curves[[cc]], lines(p, pc, lty=if(cc>1) 1 else 2,
-                             col=if(cc>1) col else "black", lwd=if(cc>1) 1 else 2))
-  })
-  legend(x=xlim[1], y=ylim[2], legend = c("Original", "Bootstrap"),
-         lty=2:1, col=c("black", col),
-         lwd=2:1)
+  if (plot){
+    plot(NA, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab)
+    l <- lapply(rev(seq(length(curves))), function(cc){
+      with(curves[[cc]], lines(p, pc, lty=if(cc>1) 1 else 2,
+                               col=if(cc>1) col else "black", lwd=if(cc>1) 1 else 2))
+    })
+    legend(x=xlim[1], y=ylim[2], legend = c("Original", sprintf("Bootstrap (n = %i)", ncol(stabil)-1)),
+           lty=2:1, col=c("black", col),
+           lwd=2:1)
+  }
 
   return(invisible(curves))
 }
@@ -197,10 +213,11 @@ calibration_stability <- function(x, calib_args,
 #' @param pch plotting character (default = 16)
 #' @param cex controls point size (default = 1)
 #' @param col color of points (default = grDevices::grey(.5, .5))
+#' @param subset vector of observations to include (row indices). This can be used to select a random subset of observations.
+#' @param plot if FALSE just returns MAPE values (see value)
 #'
 #' @return plots calibration (in)stability.
-#' Invisibly returns a list containing data for each curve (p=x-axis, pc=y-axis).
-#' The first element of this list is the apparent curve (original model on original outcome).
+#' Invisibly returns a list containing individual and average MAPE.
 #'
 #' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
 #'
@@ -222,9 +239,14 @@ calibration_stability <- function(x, calib_args,
 #'
 #' mape_stability(m1_iv)
 #'
-mape_stability <- function(x, xlim, ylim, xlab, ylab, pch, cex, col){
+mape_stability <- function(x, xlim, ylim, xlab, ylab, pch, cex,
+                           col, subset, plot=TRUE){
   stabil <- get_stability(x)
   stabil <- stabil$stability
+
+  if (!missing(subset)){
+    stabil <- stabil[subset, ]
+  }
 
   p_orig <- stabil[, 1]
   p_boot <- stabil[, -1]
@@ -242,9 +264,11 @@ mape_stability <- function(x, xlim, ylim, xlab, ylab, pch, cex, col){
   if (missing(xlab)) xlab <- "Estimated risk from development model"
   if (missing(ylab)) ylab <- "MAPE"
 
-  matplot(p_orig, individual_mape, type = "p", pch = pch,
-          col = col, cex = cex, xlim=xlim, ylim=ylim,
-          xlab=xlab, ylab=ylab)
+  if (plot){
+    matplot(p_orig, individual_mape, type = "p", pch = pch,
+            col = col, cex = cex, xlim=xlim, ylim=ylim,
+            xlab=xlab, ylab=ylab)
+  }
 
   out <- list('individual_mape' = individual_mape, 'average_mape' = average_mape)
 
@@ -270,6 +294,8 @@ mape_stability <- function(x, xlim, ylim, xlab, ylab, pch, cex, col){
 #' @param pch plotting character (default = 16)
 #' @param cex controls point size (default = 1)
 #' @param col color of points (default = grDevices::grey(.5, .5))
+#' @param subset vector of observations to include (row indices). This can be used to select a random subset of observations.
+#' @param plot if FALSE just returns CII values (see value)
 #'
 #' @return plots classification (in)stability.
 #' Invisibly returns estimates of CII for each observation.
@@ -295,9 +321,13 @@ mape_stability <- function(x, xlim, ylim, xlab, ylab, pch, cex, col){
 #' classification_stability(m1_iv, threshold=.2)
 #'
 classification_stability <- function(x, threshold, xlim, ylim,
-                                     xlab, ylab, pch, cex, col){
+                                     xlab, ylab, pch, cex, col, subset, plot=TRUE){
   stabil <- get_stability(x)
   stabil <- stabil$stability
+
+  if (!missing(subset)){
+    stabil <- stabil[subset, ]
+  }
 
   p_orig <- stabil[, 1]
   c_orig <- p_orig > threshold
@@ -316,10 +346,12 @@ classification_stability <- function(x, threshold, xlim, ylim,
   if (missing(xlab)) xlab <- "Estimated risk from development model"
   if (missing(ylab)) ylab <- "Classification Instability Index"
 
-  plot(p_orig, cii, type = "p", pch=pch, col=col, cex=cex,
-       xlim=xlim, ylim=ylim, xlab=xlab,
-       ylab=ylab)
-  abline(v = threshold, lty=2)
+  if (plot){
+    plot(p_orig, cii, type = "p", pch=pch, col=col, cex=cex,
+         xlim=xlim, ylim=ylim, xlab=xlab,
+         ylab=ylab)
+    abline(v = threshold, lty=2)
+  }
 
   return(invisible(cii))
 }
@@ -339,6 +371,8 @@ classification_stability <- function(x, threshold, xlim, ylim,
 #' @param xlab a title for the x axis
 #' @param ylab a title for the y axis
 #' @param col color of points (default = grDevices::grey(.5, .5))
+#' @param subset vector of observations to include (row indices). This can be used to select a random subset of observations.
+#' @param plot if FALSE just returns curves (see value)
 #'
 #' @return plots decision curve (in)stability.
 #' Invisibly returns a list containing data for each curve. These are returned from \code{dcurves::dca}.
@@ -365,11 +399,16 @@ classification_stability <- function(x, threshold, xlim, ylim,
 #' dcurve_stability(m1_iv)
 #'
 dcurve_stability <- function(x, thresholds = seq(0, .99, by=0.01),
-                             xlim, ylim, xlab, ylab, col){
+                             xlim, ylim, xlab, ylab, col, subset, plot=TRUE){
 
   stabil <- get_stability(x)
   y <- stabil$y # original outcome
   stabil <- stabil$stability
+
+  if (!missing(subset)){
+    stabil <- stabil[subset, ]
+    y <- y[subset]
+  }
 
   # make calibration curves
   curves <- apply(stabil, 2, function(p){
@@ -388,15 +427,17 @@ dcurve_stability <- function(x, thresholds = seq(0, .99, by=0.01),
   if (missing(ylab)) ylab <- "Net Benefit"
 
   # max(unlist(curves))
-  plot(NA, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab)
-  l <- lapply(rev(seq(length(curves))), function(dc){
-    with(curves[[dc]], lines(threshold, net_benefit, lty=if(dc>1) 1 else 2,
-                             col=if(dc>1) col else "black", lwd=if(dc>1) 1 else 2))
-  })
-  legend(x=xlim[2], y=ylim[2], legend = c("Original", "Bootstrap"),
-         lty=2:1, col=c("black", col),
-         lwd=2:1, xjust = 1)
-  abline(h=0, lty=2)
+  if (plot){
+    plot(NA, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab)
+    l <- lapply(rev(seq(length(curves))), function(dc){
+      with(curves[[dc]], lines(threshold, net_benefit, lty=if(dc>1) 1 else 2,
+                               col=if(dc>1) col else "black", lwd=if(dc>1) 1 else 2))
+    })
+    legend(x=xlim[2], y=ylim[2], legend = c("Original", sprintf("Bootstrap (n = %i)", ncol(stabil)-1)),
+           lty=2:1, col=c("black", col),
+           lwd=2:1, xjust = 1)
+    abline(h=0, lty=2)
+  }
 
   return(invisible(curves))
 }

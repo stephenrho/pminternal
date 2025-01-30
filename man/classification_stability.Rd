@@ -4,7 +4,19 @@
 \alias{classification_stability}
 \title{Classification instability plot}
 \usage{
-classification_stability(x, threshold, xlim, ylim, xlab, ylab, pch, cex, col)
+classification_stability(
+  x,
+  threshold,
+  xlim,
+  ylim,
+  xlab,
+  ylab,
+  pch,
+  cex,
+  col,
+  subset,
+  plot = TRUE
+)
 }
 \arguments{
 \item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
@@ -24,6 +36,10 @@ classification_stability(x, threshold, xlim, ylim, xlab, ylab, pch, cex, col)
 \item{cex}{controls point size (default = 1)}
 
 \item{col}{color of points (default = grDevices::grey(.5, .5))}
+
+\item{subset}{vector of observations to include (row indices). This can be used to select a random subset of observations.}
+
+\item{plot}{if FALSE just returns CII values (see value)}
 }
 \value{
 plots classification (in)stability.

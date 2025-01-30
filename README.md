@@ -16,7 +16,7 @@ To install development version:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("stephenrho/pminternal", build_vignettes = TRUE)
+devtools::install_github("stephenrho/pminternal")
 ```
 
 Please send feedback to <steverho89@gmail.com> or open an issue.
@@ -48,14 +48,16 @@ mod <- glm(y ~ ., data = dat, family = "binomial")
 # calculate bootstrap optimism corrected performance measures
 (val <- validate(fit = mod, method = "boot_optimism", B = 100))
 #> It is recommended that B >= 200 for bootstrap validation
-#>                C   Brier Intercept Slope    Eavg     E50     E90    Emax
-#> Apparent  0.8567  0.1423     0.000 1.000  0.0045  0.0039  0.0081  0.0109
-#> Optimism  0.0093 -0.0054     0.017 0.053 -0.0048 -0.0050 -0.0107 -0.0057
-#> Corrected 0.8474  0.1477    -0.017 0.947  0.0093  0.0089  0.0187  0.0165
-#>               ECI
-#> Apparent   0.0027
-#> Optimism  -0.0038
-#> Corrected  0.0065
+#>           Apparent  Optimism Corrected   n
+#> C           0.8567 -0.000194    0.8569 100
+#> Brier       0.1423  0.000041    0.1423 100
+#> Intercept   0.0000 -0.007510    0.0075 100
+#> Slope       1.0000  0.000004    1.0000 100
+#> Eavg        0.0045  0.013274   -0.0088 100
+#> E50         0.0039  0.011028   -0.0072 100
+#> E90         0.0081  0.029486   -0.0214 100
+#> Emax        0.0109  0.036793   -0.0259 100
+#> ECI         0.0027  0.058583   -0.0558 100
 ```
 
 The other available methods for calculating bias corrected performance
@@ -77,7 +79,7 @@ selection, hyperparameter tuning, etc). For more examples, see
 # fit a glm with lasso penalty
 library(glmnet)
 #> Loading required package: Matrix
-#> Loaded glmnet 4.1-7
+#> Loaded glmnet 4.1-8
 
 lasso_fun <- function(data, ...){
   y <- data$y
@@ -100,10 +102,19 @@ lasso_predict <- function(model, data, ...){
                  model_fun = lasso_fun, pred_fun = lasso_predict, 
                  method = "boot_optimism", B = 100))
 #> It is recommended that B >= 200 for bootstrap validation
-#>                C   Brier Intercept Slope   Eavg    E50    E90  Emax   ECI
-#> Apparent  0.8558  0.1427     0.073  1.14 0.0184 0.0178 0.0366 0.040 0.044
-#> Optimism  0.0062 -0.0037     0.015  0.04 0.0025 0.0033 0.0039 0.014 0.016
-#> Corrected 0.8496  0.1463     0.057  1.10 0.0159 0.0144 0.0326 0.026 0.028
+#> Warning in boot_optimism(data = data, outcome = outcome, model_fun = model_fun, : The following warnings occurred during the call to validate
+#> 
+#> 1: Fitting terminated with step failure - check results carefully (1 occurrences)
+#>           Apparent  Optimism Corrected   n
+#> C            0.856 -0.001116     0.857 100
+#> Brier        0.143  0.000467     0.142 100
+#> Intercept    0.073 -0.004588     0.077 100
+#> Slope        1.141 -0.000072     1.141 100
+#> Eavg         0.018  0.007291     0.011 100
+#> E50          0.018  0.005324     0.012 100
+#> E90          0.037  0.013867     0.023 100
+#> Emax         0.040  0.025804     0.014 100
+#> ECI          0.044  0.064001    -0.020 100
 ```
 
 The output of `validate` (with `method = "boot_*"`) can be used to

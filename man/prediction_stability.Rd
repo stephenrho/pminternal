@@ -14,7 +14,9 @@ prediction_stability(
   cex,
   col,
   lty,
-  span
+  span,
+  subset,
+  plot = TRUE
 )
 }
 \arguments{
@@ -37,6 +39,10 @@ prediction_stability(
 \item{lty}{line type for bounds (default = 2)}
 
 \item{span}{controls the degree of smoothing (see \code{loess}; default = 0.75)}
+
+\item{subset}{vector of observations to include (row indices). If dataset is large plotting N points for B bootstrap resamples is demanding. This can be used to select a random subset of observations.}
+
+\item{plot}{if FALSE just returns stability matrix}
 }
 \value{
 plots prediction (in)stability. The stability bounds are not smoothed.

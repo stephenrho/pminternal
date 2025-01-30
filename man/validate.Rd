@@ -78,7 +78,7 @@ to another sample of the same size from the same population; see references). Th
 bias-corrected estimates (see below). It is important that the fit or model_fun provided implement
 the entire model development procedure, including any hyperparameter tuning and/or variable selection.
 
-Note that \code{validate} does very little to check for missing values. If \code{fit} is
+Note that \code{\link{validate}} does very little to check for missing values in predictors/features. If \code{fit} is
 supplied \code{insight::get_data} will extract the data used to fit the model and usually
 this will result in complete cases being used. User-defined model and predict functions can
 be specified to handle missing values among predictor variables. Currently any user supplied data will
@@ -104,6 +104,34 @@ implemented in \code{rms::validate} with method="crossvalidation".}
 \item{cv_average}{bias corrected scores are the average of scores calculated by assessing the model developed on each
 fold evaluated on the test/held out data. This approach is described and compared to "boot_optimism" and ".632" in
 Steyerberg et al. (2001).}
+}
+
+\bold{Calibration curves}
+\describe{
+To make calibration curves and calculate the associated estimates (ICI, ECI, etc - see \code{\link{score_binary}})
+\code{validate} uses the default arguments in \code{\link{cal_defaults}}. These arguments are passed to the \code{pmcalibration} package
+(see \code{?pmcalibration::pmcalibration} for options).
+
+If a calibration plot (apparent vs bias corrected calibration curves via \code{\link{cal_plot}})
+is desired, the argument 'eval' should be provided. This should be the points at which to evaluate
+the calibration curve on each boot resample or crossvalidation fold. A good option would be
+\code{calib_args = list(eval = seq(min(p), max(p), length.out=100))}; where p are predictions from the
+original model evaluated on the original data.
+}
+
+\bold{Number of resamples/folds is less than requested}
+\describe{
+If the \code{model_fun} produces an error or if \code{score_binary} is supplied with constant predictions
+or outcomes (e.g. all(y == 0)) the returned scores will all be NA. These will be omitted from the calculation
+of optimism or other bias-corrected estimates (cv_average, boot_simple) and the number of successful resamples/folds
+will be < B. \code{validate} collects errors and will produce a warning summarizing them. The number of successful
+samples is given in the 'n' column in the printed summary of an 'internal_validate' object.
+
+It is important to understand what is causing the loss of resamples/folds. Some potential sources (which will need to be added to) are that
+for rare events the resamples/folds may be resulting in samples that have zero outcomes. For 'cv_*' this will especially
+be the case if B (n folds) is set high. There may be problems with factor/binary predictor variables with rare levels, which could be dealt with
+by specifying a \code{model_fun} that omits variables for the model formula if only one level is present. The issue may be related to the construction
+of calibration curves and may be addressed by more carefully selecting settings (see section above).
 }
 }
 \examples{

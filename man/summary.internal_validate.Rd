@@ -16,8 +16,8 @@ is desired (see \code{\link{cal_plot}}) and these are ignored by default.}
 \item{...}{ignored}
 }
 \value{
-a data.frame with 3 rows (apparent score, optimism, bias-corrected score)
-and one column per score. Not all methods produce an optimism estimate so this row may be all NA.
+a data.frame with 4 columns (apparent score, optimism, bias-corrected score, number of successful resamples/folds)
+and one row per score. Not all methods produce an optimism estimate so this row may be all NA.
 }
 \description{
 Summarize a internal_validate object

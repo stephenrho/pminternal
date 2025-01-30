@@ -4,7 +4,7 @@
 \alias{mape_stability}
 \title{Mean absolute predictor error (MAPE) stability plot}
 \usage{
-mape_stability(x, xlim, ylim, xlab, ylab, pch, cex, col)
+mape_stability(x, xlim, ylim, xlab, ylab, pch, cex, col, subset, plot = TRUE)
 }
 \arguments{
 \item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
@@ -22,11 +22,14 @@ mape_stability(x, xlim, ylim, xlab, ylab, pch, cex, col)
 \item{cex}{controls point size (default = 1)}
 
 \item{col}{color of points (default = grDevices::grey(.5, .5))}
+
+\item{subset}{vector of observations to include (row indices). This can be used to select a random subset of observations.}
+
+\item{plot}{if FALSE just returns MAPE values (see value)}
 }
 \value{
 plots calibration (in)stability.
-Invisibly returns a list containing data for each curve (p=x-axis, pc=y-axis).
-The first element of this list is the apparent curve (original model on original outcome).
+Invisibly returns a list containing individual and average MAPE.
 }
 \description{
 A MAPE (in)stability plot shows mean absolute predictor error (average absolute difference between original

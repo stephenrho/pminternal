@@ -89,40 +89,71 @@ score_binary <- function(y, p, ...){
     }
     calib_args["ci"] <- "none"
     if ("eval" %in% names(calib_args)){
-      if (length(calib_args[["eval"]]) == 1){
-        warning("if specifying 'eval' in calib_args we strongly suggest specifying ",
-                "a vector of probabilities at which to evaluate the calibration curve. ",
-                "e.g., eval = seq(min(p), max(p), length.out=100), where p are predictions from ",
-                "original model evaluated on the original data. Only specifying only the number ",
-                "of points to eval (e.g., eval = 100) will likely cause issues/errors.")
+      if (length(calib_args[["eval"]]) == 1 && !calib_args[["eval"]] == 0){
+        # warning("If specifying 'eval' in calib_args we strongly suggest specifying ",
+        #         "a vector of probabilities at which to evaluate the calibration curve. ",
+        #         "e.g., eval = seq(min(p), max(p), length.out=100), where p are predictions from ",
+        #         "original model evaluated on the original data. Only specifying only the number ",
+        #         "of points to eval (e.g., eval = 100) will likely cause issues/errors.")
+        NULL # need to figure out somewhere else to put this warning as prints too many times
       }
+    } else{
+      calib_args[["eval"]] <- 0
     }
   } else{
     calib_args <- cal_defaults() # pmcalib_defaults
   }
 
-  calib_args[["y"]] <- y
-  calib_args[["p"]] <- p
+  # avoid error if resample returns constant y or p
+  if (length(unique(y)) == 1 | length(unique(p)) == 1){
+    warning("Returning NA scores as y and/or p is constant")
 
-  cal <- do.call(pmcalibration::pmcalibration, calib_args)
+    logcalcoef <- c("Intercept" = NA_real_, "Slope" = NA_real_)
+    brier <- c("Brier" = NA_real_)
+    auc <- c("C" = NA_real_)
+    # hacky(?) way to get current metrics from pmc
+    # cal <- pmcalibration::pmcalibration(y=rbinom(100, 1, prob = .5),
+    #                              p=runif(100), smooth = "none")
+    cal <- pmcalibration::pmcalibration(y=c(0,0,0,1,1,1),
+                                        p=c(.2,.2,.2,.6,.6,.6), smooth = "none", ci = "none")
 
-  logcal <- pmcalibration::logistic_cal(y = y, p = p)
-  CIL <- logcal$calibration_intercept$coefficients
-  # return CIL?
-  logcalcoef <- logcal$calibration_slope$coefficients
-  names(logcalcoef) <- c("Intercept", "Slope")
+    cal$metrics[1:(length(cal$metrics))] <- NA_real_
 
-  brier <- mean((y - p)^2)
-  names(brier) <- "Brier"
-  auc <- as.numeric(suppressMessages(pROC::auc(response = y, predictor = p)))
-  names(auc) <- "C"
+    if (length(calib_args[["eval"]]) > 1 || calib_args[["eval"]] != 0){
+      if (length(calib_args[["eval"]]) > 1){
+        cal_plot <- rep(NA_real_, times = length(calib_args[["eval"]]))
+        names(cal_plot) <- paste0( "cal_plot_", calib_args[["eval"]] )
+      } else{
+        cal_plot <- rep(NA_real_, times = calib_args[["eval"]]) # not having names might cause issues?
+      }
+    } else{
+      cal_plot <- c()
+    }
 
-  if (!is.null(cal$plot$p_c_plot)){
-    cal_plot <- cal$plot$p_c_plot
-    # names(cal_plot) <- paste0( "cal_plot_", calib_args[["eval"]] )
-    names(cal_plot) <- paste0( "cal_plot_", cal$plot$p )
-  } else{
-    cal_plot <- c()
+  } else {
+    calib_args[["y"]] <- y
+    calib_args[["p"]] <- p
+
+    cal <- do.call(pmcalibration::pmcalibration, calib_args)
+
+    logcal <- pmcalibration::logistic_cal(y = y, p = p)
+    CIL <- logcal$calibration_intercept$coefficients
+    # return CIL?
+    logcalcoef <- logcal$calibration_slope$coefficients
+    names(logcalcoef) <- c("Intercept", "Slope")
+
+    brier <- mean((y - p)^2)
+    names(brier) <- "Brier"
+    auc <- as.numeric(suppressMessages(pROC::auc(response = y, predictor = p)))
+    names(auc) <- "C"
+
+    if (!is.null(cal$plot$p_c_plot)){
+      cal_plot <- cal$plot$p_c_plot
+      # names(cal_plot) <- paste0( "cal_plot_", calib_args[["eval"]] )
+      names(cal_plot) <- paste0( "cal_plot_", cal$plot$p )
+    } else{
+      cal_plot <- c()
+    }
   }
 
   scores <- c(auc, brier, logcalcoef, cal$metrics, cal_plot)

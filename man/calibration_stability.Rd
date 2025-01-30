@@ -4,7 +4,17 @@
 \alias{calibration_stability}
 \title{Plot calibration stability across bootstrap replicates}
 \usage{
-calibration_stability(x, calib_args, xlim, ylim, xlab, ylab, col)
+calibration_stability(
+  x,
+  calib_args,
+  xlim,
+  ylim,
+  xlab,
+  ylab,
+  col,
+  subset,
+  plot = TRUE
+)
 }
 \arguments{
 \item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
@@ -21,6 +31,10 @@ are given by \code{\link{cal_defaults}} with 'eval' set to 100 (evaluate each cu
 \item{ylab}{a title for the y axis}
 
 \item{col}{color of lines for bootstrap models (default = grDevices::grey(.5, .3))}
+
+\item{subset}{vector of observations to include (row indices). If dataset is large fitting B curves is demanding. This can be used to select a random subset of observations.}
+
+\item{plot}{if FALSE just returns curves (see value)}
 }
 \value{
 plots calibration (in)stability.

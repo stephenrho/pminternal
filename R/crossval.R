@@ -59,19 +59,53 @@ crossval <- function(data, outcome,
     score_fun <- score_binary
   }
 
+  # - deal with model fit fails
+  mf <- function(data, ...){
+    tryCatch(expr = model_fun(data=data, ...),
+             error = function(e) {
+               message("model fit failed on resample: ", e)
+               NULL
+             }
+    )
+  }
+
+  ef <- function(model, data, outcome, ...){
+    # eval fit and return NA scores if model fit failed
+    if (is.null(model)){
+      # hacky way to get names...
+      #score <- score_fun(y = sample(x = 0:1, size = 1000, replace = TRUE), p = runif(1000, .01, .99), ...)
+      score <- suppressWarnings(score_fun(y = rep(0, 4), p = rep(0, 4), ...))
+
+      score[1:length(score)] <- NA_real_
+      p <- rep(NA_real_, times = length(data[[outcome]]))
+    } else{
+      p <- pred_fun(model = fit, data = data, ...)
+      y <- data[[outcome]]
+      score <- score_fun(y = y, p = p, ...)
+    }
+    return(list(score=score, p=p))
+  }
+
   # apparent
-  fit <- model_fun(data=data, ...)
-  p_app <- pred_fun(model = fit, data = data, ...)
+  fit <- mf(data=data, ...) #model_fun(data=data, ...)
+  if (is.null(fit)) stop("Model fit failed on assessment of apparent performance")
+
+  # p_app <- pred_fun(model = fit, data = data, ...)
   y <- data[[outcome]]
-  score_app <- score_fun(y = y, p = p_app, ...)
+  score_app <- ef(model = fit, data = data, outcome = outcome, ...) #score_fun(y = y, p = p_app, ...)
+  p_app <- score_app$p
+  score_app <- score_app$score
+
+  # fit <- model_fun(data=data, ...)
+  # p_app <- pred_fun(model = fit, data = data, ...)
+  # y <- data[[outcome]]
+  # score_app <- score_fun(y = y, p = p_app, ...)
 
   n <- nrow(data)
 
-  # k=25
-  # n = 1234
+  # set up folds
   nperfold <- n/k
   if (nperfold < 2) stop("Number of holdouts per fold is less than 2. Decrease the number of folds.")
-
   indices <- lapply(seq(k), function(i){
     start <- 1 + round((i - 1)*nperfold)
     stop <- min(n, round(i*nperfold))
@@ -84,44 +118,64 @@ crossval <- function(data, outcome,
   # (unlist(indices) |> unique() |> length()) == n
   # (sapply(indices, length) |> mean()) == nperfold
 
-  S <- lapply(indices, function(i){
+  fold <- function(i){
     data_train <- data[-i, ]
     data_test <- data[i, ]
 
-    if (all(data_train[[outcome]] == 0, na.rm = TRUE) |
-        all(data_train[[outcome]] == 1, na.rm = TRUE) |
-        all(data_test[[outcome]] == 0, na.rm = TRUE) |
-        all(data_test[[outcome]] == 1, na.rm = TRUE)
-        ){
-      stop("crossval error: one fold had all 0 or 1 in outcomes. ",
-           "Try fewer folds.")
-    }
-
-    fit <- model_fun(data = data_train, ...)
-
-    p_test <- pred_fun(model = fit, data = data_test, ...)
-    score_test <- score_fun(y = data_test[[outcome]], p = p_test, ...)
-
-    p_train <- pred_fun(model = fit, data = data_train, ...)
-    score_train <- score_fun(y = data_train[[outcome]], p = p_train, ...)
+    fit <- mf(data = data_train, ...)
+    score_test <- ef(model = fit, data = data_test, outcome = outcome, ...)$score
+    score_train <- ef(model = fit, data = data_train, outcome = outcome, ...)$score
 
     list("score_test" = score_test,
          "optimism" = score_train - score_test)
-  })
+  }
 
-  cv_average <- do.call(rbind, lapply(S, function(x) x$score_test))
-  cv_average <- apply(cv_average, 2, mean)
+  qfold <- purrr::quietly(fold)
 
-  opt <- do.call(rbind, lapply(S, function(x) x$optimism))
-  opt <- apply(opt, 2, mean)
+  S <- lapply(indices, FUN = qfold)
+
+  # extrct warnings/messages
+  warns <- lapply(S, function(x) x$warnings)
+  mess <- lapply(S, function(x) x$messages)
+
+  if (any(sapply(warns, length) > 0)){
+    w <- unique(unlist(warns))
+    nw <- sapply(w, function(x){
+      sum(sapply(warns, function(xx) any(xx == x)))
+    })
+    warning(paste0("The following warnings occurred during the call to validate\n\n",
+                   paste0(seq(w), ": ", w, " (", nw, " occurrences)", collapse = "\n") ))
+  }
+
+  if (any(sapply(mess, length) > 0)){
+    w <- unique(unlist(mess))
+    nw <- sapply(w, function(x){
+      sum(sapply(mess, function(xx) any(xx == x)))
+    })
+    message(paste0("The following messages occurred during the call to validate\n\n",
+                   paste0(seq(w), ": ", w, " (", nw, " occurrences)", collapse = "\n") ))
+  }
+
+  # output
+  cv_average <- do.call(rbind, lapply(S, function(x) x$result$score_test))
+  n_cv_average <- apply(cv_average, 2, function(x) sum(!is.na(x)))
+  cv_average <- apply(cv_average, 2, mean, na.rm=TRUE)
+
+  opt <- do.call(rbind, lapply(S, function(x) x$result$optimism))
+  nopt <- apply(opt, 2, function(x) sum(!is.na(x)))
+  opt <- apply(opt, 2, mean, na.rm=TRUE)
 
   bcorr <- score_app - opt
 
   out <- list("apparent" = score_app,
               "optimism" = opt,
+              "n_optimism" = nopt,
               "corrected" = bcorr,
               "cv_average" = cv_average,
-              "indices" = indices)
+              "n_cv_average" = n_cv_average,
+              "indices" = indices,
+              "warnings" = warns,
+              "messages" = mess)
 
   class(out) <- "internal_cv"
 
@@ -137,8 +191,10 @@ crossval <- function(data, outcome,
 #' @return invisibly returns \code{x} and prints estimates to console
 #' @export
 print.internal_cv <- function(x, digits=2, ...){
-  out <- rbind(x$apparent, x$optimism, x$corrected, x$cv_average)
-  rownames(out) <- c("Apparent", "CV Optimism", "CV Corrected", "CV Average")
+  out <- rbind(x$apparent, x$optimism, x$n_optimism, x$corrected,
+               x$cv_average, x$n_cv_average)
+  rownames(out) <- c("Apparent", "CV Optimism", "B Optimism", "Optimism Corrected",
+                     "CV Average", "B Average")
   print(out, digits = digits, ...)
   return(invisible(x))
 }

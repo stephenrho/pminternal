@@ -64,12 +64,41 @@ boot_optimism <- function(data, outcome,
   }
   # TODO:
   # - deal with model fit fails
+  mf <- function(data, ...){
+    tryCatch(expr = model_fun(data=data, ...),
+             error = function(e) {
+               message("model fit failed on resample: ", e)
+               NULL
+             }
+    )
+  }
+
+  ef <- function(model, data, outcome, ...){
+    # eval fit and return NA scores if model fit failed
+    if (is.null(model)){
+      # hacky way to get names...
+      # score <- score_fun(y = sample(x = 0:1, size = 1000, replace = TRUE), p = runif(1000, .01, .99), ...)
+      score <- suppressWarnings(score_fun(y = rep(0, 4), p = rep(0, 4), ...))
+
+      score[1:length(score)] <- NA_real_
+      p <- rep(NA_real_, times = length(data[[outcome]]))
+    } else{
+      p <- pred_fun(model = model, data = data, ...)
+      y <- data[[outcome]]
+      score <- score_fun(y = y, p = p, ...)
+    }
+    return(list(score=score, p=p))
+  }
 
   # apparent
-  fit <- model_fun(data=data, ...)
-  p_app <- pred_fun(model = fit, data = data, ...)
+  fit <- mf(data=data, ...) #model_fun(data=data, ...)
+  if (is.null(fit)) stop("Model fit failed on assessment of apparent performance")
+
+  # p_app <- pred_fun(model = fit, data = data, ...)
   y <- data[[outcome]]
-  score_app <- score_fun(y = y, p = p_app, ...)
+  score_app <- ef(model = fit, data = data, outcome = outcome, ...) #score_fun(y = y, p = p_app, ...)
+  p_app <- score_app$p
+  score_app <- score_app$score
 
   # see rms::predab.resample
   n <- nrow(data)
@@ -97,32 +126,33 @@ boot_optimism <- function(data, outcome,
     cores <- 1
   }
 
-  cl <- parallel::makeCluster(cores)
-  parallel::clusterExport(cl, varlist = c("B", "data", "indices", "wt", "method",
-                                          "model_fun", "pred_fun", "score_fun"),
-                          envir = environment())
-  S <- pbapply::pblapply(seq(B), function(i){
-  #S <- parallel::parLapply(X = seq(B), fun = function(i){
+  boot <- function(i){
     # resample
     #data_i <- data[sample(x = nrow(data), replace = T), ]
     data_i <- data[indices[, i], ]
     # fit model on bootstrap resample
-    model_i <- model_fun(data = data_i, ...)
+    model_i <- mf(data = data_i, ...) # model_fun
 
     if (method == "boot"){
-      # eval bootstrap model on boot and original data
-      p_orig <- pred_fun(model = model_i, data = data, ...)
-      p_boot <- pred_fun(model = model_i, data = data_i, ...)
-      # calculate scores for boot model eval'd on orig and boot data
-      score_orig <- score_fun(y = data[[outcome]], p = p_orig, ...)
-      score_boot <- score_fun(y = data_i[[outcome]], p = p_boot, ...)
+      # # eval bootstrap model on boot and original data
+      # p_orig <- pred_fun(model = model_i, data = data, ...)
+      # p_boot <- pred_fun(model = model_i, data = data_i, ...)
+      # # calculate scores for boot model eval'd on orig and boot data
+      # score_orig <- score_fun(y = data[[outcome]], p = p_orig, ...)
+      # score_boot <- score_fun(y = data_i[[outcome]], p = p_boot, ...)
+
+      score_orig <- ef(model = model_i, data = data, outcome = outcome, ...)
+      p_orig <- score_orig$p
+      score_orig <- score_orig$score
+      score_boot <- ef(model = model_i, data = data_i, outcome = outcome, ...)$score
       optimism <- score_boot - score_orig
     } else {
       p_orig <- score_orig <-  NULL
       # evaluate model on the left out indices
       data_omit_i <- data[-indices[, i], ]
-      p_omit <- pred_fun(model = model_i, data = data_omit_i, ...)
-      score_omit <- score_fun(y = data_omit_i[[outcome]], p = p_omit, ...)
+      # p_omit <- pred_fun(model = model_i, data = data_omit_i, ...)
+      # score_omit <- score_fun(y = data_omit_i[[outcome]], p = p_omit, ...)
+      score_omit <- ef(model = model_i, data = data_omit_i, outcome = outcome, ...)$score
       optimism <- .632*(score_app - score_omit*wt[i])
     }
 
@@ -132,20 +162,55 @@ boot_optimism <- function(data, outcome,
          "score_orig" = score_orig#,
          #"score_boot" = score_boot
     )
-  }, cl = cl)
+  }
+
+  qboot <- purrr::quietly(boot)
+
+  cl <- parallel::makeCluster(cores)
+  parallel::clusterExport(cl, varlist = c("B", "data", "indices", "wt", "method",
+                                          "model_fun", "pred_fun", "score_fun",
+                                          "mf", "ef", "boot", "qboot"),
+                          envir = environment())
+  S <- pbapply::pblapply(seq(B), FUN = qboot, cl = cl)
   parallel::stopCluster(cl)
   #closeAllConnections()
 
+  # extrct warnings/messages
+  # extract_warningsmessages(S, "warnings")
+  # extract_warningsmessages(S, "messages")
+  warns <- lapply(S, function(x) x$warnings)
+  mess <- lapply(S, function(x) x$messages)
+
+  if (any(sapply(warns, length) > 0)){
+    w <- unique(unlist(warns))
+    nw <- sapply(w, function(x){
+      sum(sapply(warns, function(xx) any(xx == x)))
+    })
+    warning(paste0("The following warnings occurred during the call to validate\n\n",
+                   paste0(seq(w), ": ", w, " (", nw, " occurrences)", collapse = "\n") ))
+  }
+
+  if (any(sapply(mess, length) > 0)){
+    w <- unique(unlist(mess))
+    nw <- sapply(w, function(x){
+      sum(sapply(mess, function(xx) any(xx == x)))
+    })
+    message(paste0("The following messages occurred during the call to validate\n\n",
+                   paste0(seq(w), ": ", w, " (", nw, " occurrences)", collapse = "\n") ))
+  }
+
   # make output
-  opt <- do.call(rbind, lapply(S, function(x) x$optimism))
-  opt <- apply(opt, 2, mean)
+  opt <- do.call(rbind, lapply(S, function(x) x$result$optimism))
+  nopt <- apply(opt, 2, function(x) sum(!is.na(x)))
+  opt <- apply(opt, 2, mean, na.rm=TRUE)
 
   bcorr <- score_app - opt
 
   if (method == "boot"){
-    simple_boot <- do.call(rbind, lapply(S, function(x) x$score_orig))
-    simple_boot <- apply(simple_boot, 2, mean)
-    stability <- do.call(cbind, lapply(S, function(x) x$p_orig))
+    simple_boot <- do.call(rbind, lapply(S, function(x) x$result$score_orig))
+    nsimple_boot <- apply(simple_boot, 2, function(x) sum(!is.na(x)))
+    simple_boot <- apply(simple_boot, 2, mean, na.rm=TRUE)
+    stability <- do.call(cbind, lapply(S, function(x) x$result$p_orig))
     stability <- cbind(p_app = p_app, stability)
   } else{
     simple_boot <- stability <- NULL
@@ -153,12 +218,16 @@ boot_optimism <- function(data, outcome,
 
   out <- list("apparent" = score_app,
               "optimism" = opt,
+              "n_optimism" = nopt,
               "corrected" = bcorr,
               "simple" = simple_boot,
+              "n_simple" = nsimple_boot,
               "stability" = stability,
               "y" = y,
-              "method" = method)
-  # TODO: add successful B runs accounting for model fails
+              "method" = method,
+              "B"=B,
+              "warnings" = warns,
+              "messages" = mess)
 
   class(out) <- "internal_boot"
 
@@ -174,8 +243,10 @@ boot_optimism <- function(data, outcome,
 #' @return invisibly returns \code{x} and prints estimates to console
 #' @export
 print.internal_boot <- function(x, digits=2, ...){
-  out <- rbind(x$apparent, x$optimism, x$corrected)
-  rownames(out) <- c("Apparent", "Optimism", "Corrected")
+  out <- rbind(x$apparent, x$optimism, x$n_optimism, x$corrected,
+               x$simple, x$n_simple)
+  rownames(out) <- c("Apparent", "Optimism", "B Optimism", "Optimism Corrected",
+                     "Simple Corrected", "B Simple")
   print(out, digits = digits, ...)
   return(invisible(x))
 }

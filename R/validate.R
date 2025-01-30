@@ -48,7 +48,7 @@
 #' bias-corrected estimates (see below). It is important that the fit or model_fun provided implement
 #' the entire model development procedure, including any hyperparameter tuning and/or variable selection.
 #'
-#' Note that \code{validate} does very little to check for missing values. If \code{fit} is
+#' Note that \code{\link{validate}} does very little to check for missing values in predictors/features. If \code{fit} is
 #' supplied \code{insight::get_data} will extract the data used to fit the model and usually
 #' this will result in complete cases being used. User-defined model and predict functions can
 #' be specified to handle missing values among predictor variables. Currently any user supplied data will
@@ -74,6 +74,34 @@
 #' \item{cv_average}{bias corrected scores are the average of scores calculated by assessing the model developed on each
 #' fold evaluated on the test/held out data. This approach is described and compared to "boot_optimism" and ".632" in
 #' Steyerberg et al. (2001).}
+#' }
+#'
+#' \bold{Calibration curves}
+#' \describe{
+#' To make calibration curves and calculate the associated estimates (ICI, ECI, etc - see \code{\link{score_binary}})
+#' \code{validate} uses the default arguments in \code{\link{cal_defaults}}. These arguments are passed to the \code{pmcalibration} package
+#' (see \code{?pmcalibration::pmcalibration} for options).
+#'
+#' If a calibration plot (apparent vs bias corrected calibration curves via \code{\link{cal_plot}})
+#' is desired, the argument 'eval' should be provided. This should be the points at which to evaluate
+#' the calibration curve on each boot resample or crossvalidation fold. A good option would be
+#' \code{calib_args = list(eval = seq(min(p), max(p), length.out=100))}; where p are predictions from the
+#' original model evaluated on the original data.
+#' }
+#'
+#' \bold{Number of resamples/folds is less than requested}
+#' \describe{
+#' If the \code{model_fun} produces an error or if \code{score_binary} is supplied with constant predictions
+#' or outcomes (e.g. all(y == 0)) the returned scores will all be NA. These will be omitted from the calculation
+#' of optimism or other bias-corrected estimates (cv_average, boot_simple) and the number of successful resamples/folds
+#' will be < B. \code{validate} collects errors and will produce a warning summarizing them. The number of successful
+#' samples is given in the 'n' column in the printed summary of an 'internal_validate' object.
+#'
+#' It is important to understand what is causing the loss of resamples/folds. Some potential sources (which will need to be added to) are that
+#' for rare events the resamples/folds may be resulting in samples that have zero outcomes. For 'cv_*' this will especially
+#' be the case if B (n folds) is set high. There may be problems with factor/binary predictor variables with rare levels, which could be dealt with
+#' by specifying a \code{model_fun} that omits variables for the model formula if only one level is present. The issue may be related to the construction
+#' of calibration curves and may be addressed by more carefully selecting settings (see section above).
 #' }
 #'
 #' @return an object of class internal_validate containing apparent and bias-corrected
@@ -113,10 +141,6 @@ validate <- function(fit,
                      score_fun,
                      B,
                      ...){
-  # TODO:
-  # pbapply
-  # add plot arg to validate to automatically include stuff to make cal_plot
-  # make stability plots more flexible?
 
   call <- match.call()
   method <- match.arg(method)
@@ -137,7 +161,7 @@ validate <- function(fit,
   if (!missing(fit)){
     if (any(!missing(data), !missing(outcome),
             !missing(model_fun), !missing(pred_fun))){
-      warning("if fit is specified, data, outcome, model_fun, and pred_fun are ignored")
+      warning("If fit is specified, data, outcome, model_fun, and pred_fun are ignored")
     }
     # check class
     if (isFALSE(class(fit)[1] %in% insight::supported_models())){
@@ -193,27 +217,50 @@ validate <- function(fit,
   if ( method %in% c("boot_optimism", "boot_simple", ".632") ){
     if (B < 200) message("It is recommended that B >= 200 for bootstrap validation")
     m <- if (method == ".632") ".632" else "boot"
-    res <- boot_optimism(data = data, outcome = outcome,
-                         model_fun = model_fun, pred_fun = pred_fun, score_fun = score_fun,
-                         method = m, B = B, ...)
+    res <- boot_optimism(data = data,
+                         outcome = outcome,
+                         model_fun = model_fun,
+                         pred_fun = pred_fun,
+                         score_fun = score_fun,
+                         method = m,
+                         B = B, ...)
   } else if ( method %in% c("cv_optimism", "cv_average") ){
-    res <- crossval(data = data, outcome = outcome,
-                    model_fun = model_fun, pred_fun = pred_fun,
-                    score_fun = score_fun, k = B, ...)
+    res <- crossval(data = data,
+                    outcome = outcome,
+                    model_fun = model_fun,
+                    pred_fun = pred_fun,
+                    score_fun = score_fun,
+                    k = B, ...)
   }
 
   apparent <- res$apparent
   if (method %in% c("boot_optimism", ".632", "cv_optimism")){
     optimism <- res$optimism
     corrected <- res$corrected
+    B_actual <- res$n_optimism
   } else{
     optimism <- NA
     if (method == "boot_simple"){
       corrected <- res$simple
+      B_actual <- res$n_simple
     } else if (method == "cv_average"){
       corrected <- res$cv_average
+      B_actual <- res$n_cv_average
     }
   }
+
+  if (any(B_actual < B)) {
+    message(strwrap("Note there were some unsuccessful resamples (see n column in
+                    summary). It is worth trying to understand why these unsuccessful
+                    runs are happening. validate will print the warnings and messages
+                    encountered.",
+                    prefix = " ", initial = ""),
+"\n\nThe greater the proportion of samples lost the more important it is to figure out the source and try to address. See ?validate details for potential sources.")
+  }
+
+  # If you requested estimates for a calibration
+  # curve this aspect could be causing issues (these estimates can be
+  #                                            assessed by calling summary(object, ignore_scores='')).
 
   out <- list(apparent = apparent,
               optimism = optimism,
@@ -222,6 +269,7 @@ validate <- function(fit,
               method = method,
               call = call,
               B = B,
+              B_actual = B_actual,
               fit = if (missing(fit)) NULL else fit,
               data = data,
               outcome = outcome,
@@ -242,8 +290,8 @@ validate <- function(fit,
 #' is desired (see \code{\link{cal_plot}}) and these are ignored by default.
 #' @param ... ignored
 #'
-#' @return a data.frame with 3 rows (apparent score, optimism, bias-corrected score)
-#' and one column per score. Not all methods produce an optimism estimate so this row may be all NA.
+#' @return a data.frame with 4 columns (apparent score, optimism, bias-corrected score, number of successful resamples/folds)
+#' and one row per score. Not all methods produce an optimism estimate so this row may be all NA.
 #' @export
 #'
 #' @examples
@@ -265,10 +313,10 @@ validate <- function(fit,
 summary.internal_validate <- function(object, ignore_scores="^cal_plot", ...){
   i <- !grepl(ignore_scores, names(object$apparent))
 
-  out <- rbind(object$apparent[i], object$optimism[i], object$corrected[i])
-  rownames(out) <- c("Apparent", "Optimism", "Corrected")
+  out <- rbind(object$apparent[i], object$optimism[i], object$corrected[i], object$B_actual[i])
+  rownames(out) <- c("Apparent", "Optimism", "Corrected", "n")
 
-  out <- data.frame(out)
+  out <- data.frame(t(out))
   class(out) <- c("internal_validatesummary", "data.frame")
 
   return(out)
@@ -285,7 +333,7 @@ summary.internal_validate <- function(object, ignore_scores="^cal_plot", ...){
 #' @export
 print.internal_validatesummary <- function(x, digits = 2, ...){
   #print.data.frame(x, digits = digits, scientific=F)
-  print(format(round(x, 6), digits = digits, scientific=F))
+  print(format(round(x, 6), digits = digits, scientific=FALSE))
   return(invisible(x))
 }
 

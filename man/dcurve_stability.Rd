@@ -11,7 +11,9 @@ dcurve_stability(
   ylim,
   xlab,
   ylab,
-  col
+  col,
+  subset,
+  plot = TRUE
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ dcurve_stability(
 \item{ylab}{a title for the y axis}
 
 \item{col}{color of points (default = grDevices::grey(.5, .5))}
+
+\item{subset}{vector of observations to include (row indices). This can be used to select a random subset of observations.}
+
+\item{plot}{if FALSE just returns curves (see value)}
 }
 \value{
 plots decision curve (in)stability.

@@ -43,7 +43,18 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cal_plot</span><span class="op">(</span><span class="va">x</span>, <span class="va">xlim</span>, <span class="va">ylim</span>, <span class="va">xlab</span>, <span class="va">ylab</span>, <span class="va">app_col</span>, <span class="va">bc_col</span>, <span class="va">app_lty</span>, <span class="va">bc_lty</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cal_plot</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  <span class="va">xlim</span>,</span>
+<span>  <span class="va">ylim</span>,</span>
+<span>  <span class="va">xlab</span>,</span>
+<span>  <span class="va">ylab</span>,</span>
+<span>  <span class="va">app_col</span>,</span>
+<span>  <span class="va">bc_col</span>,</span>
+<span>  <span class="va">app_lty</span>,</span>
+<span>  <span class="va">bc_lty</span>,</span>
+<span>  plotci <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"if"</span>, <span class="st">"yes"</span>, <span class="st">"no"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -86,13 +97,20 @@ have specified 'eval' argument. See <code><a href="score_binary.html">score_bina
 <dt id="arg-bc-lty">bc_lty<a class="anchor" aria-label="anchor" href="#arg-bc-lty"></a></dt>
 <dd><p>line type of the bias-corrected calibration curve (default = 2)</p></dd>
 
+
+<dt id="arg-plotci">plotci<a class="anchor" aria-label="anchor" href="#arg-plotci"></a></dt>
+<dd><p>plot confidence intervals ('yes') or not ('no'). If 'yes' x should have confidence intervals
+added by <code><a href="confint.internal_validatesummary.html">confint.internal_validate</a></code>. 'if' (default) plots CIs if they are
+available.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>plots apparent and bias-corrected curves. Silently returns a data.frame
 that can be used to produce a more 'publication ready' plot. Columns are as
 follows: predicted = values for the x-axis, apparent = value of apparent curve,
-bias_corrected = value of bias-corrected curve.</p>
+bias_corrected = value of bias-corrected curve. Confidence intervals are included
+if available.</p>
     </div>
 
     <div class="section level2">

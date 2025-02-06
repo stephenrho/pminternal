@@ -68,7 +68,9 @@ is desired (see <code><a href="cal_plot.html">cal_plot</a></code>) and these are
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>a data.frame with 4 columns (apparent score, optimism, bias-corrected score, number of successful resamples/folds)
-and one row per score. Not all methods produce an optimism estimate so this row may be all NA.</p>
+and one row per score. Not all methods produce an optimism estimate so this row may be all NA. If confidence intervals
+have been added for all measures via <code><a href="confint.internal_validatesummary.html">confint.internal_validate</a></code>, two additional columns containing lower and upper bounds for
+bias-corrected performance.</p>
     </div>
 
     <div class="section level2">

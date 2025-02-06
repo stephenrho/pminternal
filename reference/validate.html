@@ -3,11 +3,11 @@
 or cross-validation. Many model types are supported via the insight and marginaleffects
 packages or users can supply user-defined functions that implement the model development
 procedure and retrieve predictions. Bias-corrected scores and estimates of optimism (where applicable)
-are provided."><meta property="og:description" content="Performs internal validation of a prediction model development procedure via bootstrapping
+are provided. See confint.internal_validate for calculation of confidence intervals."><meta property="og:description" content="Performs internal validation of a prediction model development procedure via bootstrapping
 or cross-validation. Many model types are supported via the insight and marginaleffects
 packages or users can supply user-defined functions that implement the model development
 procedure and retrieve predictions. Bias-corrected scores and estimates of optimism (where applicable)
-are provided."></head><body>
+are provided. See confint.internal_validate for calculation of confidence intervals."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -50,14 +50,14 @@ are provided."></head><body>
 or cross-validation. Many model types are supported via the <code>insight</code> and <code>marginaleffects</code>
 packages or users can supply user-defined functions that implement the model development
 procedure and retrieve predictions. Bias-corrected scores and estimates of optimism (where applicable)
-are provided.</p>
+are provided. See <code><a href="confint.internal_validatesummary.html">confint.internal_validate</a></code> for calculation of confidence intervals.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">validate</span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"boot_optimism"</span>, <span class="st">"boot_simple"</span>, <span class="st">".632"</span>, <span class="st">"cv_optimism"</span>, <span class="st">"cv_average"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"boot_optimism"</span>, <span class="st">"boot_simple"</span>, <span class="st">".632"</span>, <span class="st">"cv_optimism"</span>, <span class="st">"cv_average"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">outcome</span>,</span>
 <span>  <span class="va">model_fun</span>,</span>
@@ -85,7 +85,7 @@ model_fun, and pred_fun are all ignored.</p></dd>
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>bias-correction method. Valid options are "boot_optimism", "boot_simple",
-".632", "cv_optimism", or "cv_average". See details.</p></dd>
+".632", "cv_optimism", "cv_average", or "none" (return apparent performance). See details.</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>

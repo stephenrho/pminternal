@@ -33,7 +33,7 @@ get_stability <- function(x){
   }
 
   # omit NAs
-  stabil <- stabil[, apply(stabil, 2, \(x) !any(is.na(x)))]
+  stabil <- stabil[, apply(stabil, 2, function(x) !any(is.na(x)))]
 
   return(list(stability = stabil, y = y))
 }

@@ -24,7 +24,7 @@ In developing a clinical prediction model measures of model performance are bias
 
 # Supplying a model via `fit`
 
-`validate` only needs a single argument to run, `fit`. `fit` should be a fitted model that is compatible with `insight::get_data`, `insight::find_response`, `insight::get_call`, and `marginaleffects::get_predict`. Models supported by insight can be found by running `insight::supported_models()` (or run `is_model_supported(fit)`); models supported by `marginaleffects` are here https://marginaleffects.com/articles/supported_models.html. As we're dealing with binary outcomes, not all models listed will be applicable. 
+`validate` only needs a single argument to run, `fit`. `fit` should be a fitted model that is compatible with `insight::get_data`, `insight::find_response`, `insight::get_call`, and `marginaleffects::get_predict`. Models supported by insight can be found by running `insight::supported_models()` (or run `is_model_supported(fit)`); models supported by `marginaleffects` are here https://marginaleffects.com/bonus/supported_models.html. As we're dealing with binary outcomes, not all models listed will be applicable. 
 
 The code below loads the GUSTO-I trial data, selects relevant variables, subsets to reduce run time, fits a development model (a `glm`), and passes it to `validate`.
 
@@ -65,7 +65,7 @@ mape$average_mape
 
 ```
 
-As a final part to this example. It is possible to get apparent and bias-corrected calibration curves. For this we need to set an additional argument, specifying where to assess the calibration curve (i.e., points on the x-axis) as follows.
+It is possible to get apparent and bias-corrected calibration curves. For this we need to set an additional argument, specifying where to assess the calibration curve (i.e., points on the x-axis) as follows.
 
 ```{r, fig.height=5, fig.width=6}
 # find 100 equally spaced points 
@@ -95,6 +95,12 @@ ggplot(calp, aes(x=predicted)) +
                  binwidth = .001, inherit.aes = F, alpha=1/2) +
   labs(x="Predicted Risk", y="Estimated Risk", color=NULL)
 
+```
+
+Finally, bootstrap confidence intervals can be calculated (see https://onlinelibrary.wiley.com/doi/10.1002/sim.9148 for details).
+
+```{r}
+confint(mod_iv, parm = c("C", "Brier"), method = "shifted", R=100)
 ```
 
 Additional models that could be supplied via `fit` and that I have tested on this gusto example are given below. Please let me know if you run into trouble with a model class that you feel should work with `fit`. The chunk below is not evaluated for build time so does not print any output.

@@ -5,7 +5,7 @@
 #' or cross-validation. Many model types are supported via the \code{insight} and \code{marginaleffects}
 #' packages or users can supply user-defined functions that implement the model development
 #' procedure and retrieve predictions. Bias-corrected scores and estimates of optimism (where applicable)
-#' are provided.
+#' are provided. See \code{\link{confint.internal_validate}} for calculation of confidence intervals.
 #'
 #' @param fit a model object. If fit is given the \code{insight} package is
 #' used to extract data, outcome, and original model call. Therefore, it is important
@@ -16,7 +16,7 @@
 #' compatible with this function. If fit is provided the arguments data, outcome,
 #' model_fun, and pred_fun are all ignored.
 #' @param method bias-correction method. Valid options are "boot_optimism", "boot_simple",
-#' ".632", "cv_optimism", or "cv_average". See details.
+#' ".632", "cv_optimism", "cv_average", or "none" (return apparent performance). See details.
 #' @param data a data.frame containing data used to fit development model
 #' @param outcome character denoting the column name of the outcome in data
 #' @param model_fun for models that cannot be supplied via fit this should be a function
@@ -133,7 +133,7 @@
 #'
 validate <- function(fit,
                      method=c("boot_optimism", "boot_simple",
-                              ".632", "cv_optimism", "cv_average"),
+                              ".632", "cv_optimism", "cv_average", "none"),
                      data,
                      outcome,
                      model_fun,
@@ -153,22 +153,29 @@ validate <- function(fit,
     }
   }
 
+  if (method == "none") B <- NA
+
   if (missing(fit) & any(missing(data), missing(outcome),
                          missing(model_fun), missing(pred_fun))){
     stop("if fit not provided, data, outcome, model_fun, and pred_fun must be specified")
   }
 
   if (!missing(fit)){
-    if (any(!missing(data), !missing(outcome),
+    if (any(#!missing(data), !missing(outcome),
             !missing(model_fun), !missing(pred_fun))){
-      warning("If fit is specified, data, outcome, model_fun, and pred_fun are ignored")
+      warning("If fit is specified, model_fun and pred_fun are ignored")
     }
     # check class
     if (isFALSE(class(fit)[1] %in% insight::supported_models())){
       stop("fit provided is not a class supported - see insight::supported_models()")
     }
-    data <- insight::get_data(fit)
-    outcome <- insight::find_response(fit)
+    if (missing(data)){
+      data <- insight::get_data(fit)
+    }
+    if (missing(outcome)){
+      outcome <- insight::find_response(fit)
+    }
+
     mcall <- insight::get_call(fit)
 
     model_fun <- function(data, ...){
@@ -209,58 +216,58 @@ validate <- function(fit,
     data <- data[which(!missy), ]
   }
 
-  # test
-  fit <- model_fun(data=data, ...)
-  p_app <- pred_fun(model = fit, data = data, ...)
-  score_app <- score_fun(y = data[[outcome]], p = p_app, ...)
-
-  if ( method %in% c("boot_optimism", "boot_simple", ".632") ){
-    if (B < 200) message("It is recommended that B >= 200 for bootstrap validation")
-    m <- if (method == ".632") ".632" else "boot"
-    res <- boot_optimism(data = data,
-                         outcome = outcome,
-                         model_fun = model_fun,
-                         pred_fun = pred_fun,
-                         score_fun = score_fun,
-                         method = m,
-                         B = B, ...)
-  } else if ( method %in% c("cv_optimism", "cv_average") ){
-    res <- crossval(data = data,
-                    outcome = outcome,
-                    model_fun = model_fun,
-                    pred_fun = pred_fun,
-                    score_fun = score_fun,
-                    k = B, ...)
-  }
-
-  apparent <- res$apparent
-  if (method %in% c("boot_optimism", ".632", "cv_optimism")){
-    optimism <- res$optimism
-    corrected <- res$corrected
-    B_actual <- res$n_optimism
-  } else{
-    optimism <- NA
-    if (method == "boot_simple"){
-      corrected <- res$simple
-      B_actual <- res$n_simple
-    } else if (method == "cv_average"){
-      corrected <- res$cv_average
-      B_actual <- res$n_cv_average
+  if (method != "none"){
+    if ( method %in% c("boot_optimism", "boot_simple", ".632") ){
+      if (B < 200) message("It is recommended that B >= 200 for bootstrap validation")
+      m <- if (method == ".632") ".632" else "boot"
+      res <- boot_optimism(data = data,
+                           outcome = outcome,
+                           model_fun = model_fun,
+                           pred_fun = pred_fun,
+                           score_fun = score_fun,
+                           method = m,
+                           B = B, ...)
+    } else if ( method %in% c("cv_optimism", "cv_average") ){
+      res <- crossval(data = data,
+                      outcome = outcome,
+                      model_fun = model_fun,
+                      pred_fun = pred_fun,
+                      score_fun = score_fun,
+                      k = B, ...)
     }
-  }
 
-  if (any(B_actual < B)) {
-    message(strwrap("Note there were some unsuccessful resamples (see n column in
+    apparent <- res$apparent
+    if (method %in% c("boot_optimism", ".632", "cv_optimism")){
+      optimism <- res$optimism
+      corrected <- res$corrected
+      B_actual <- res$n_optimism
+    } else{
+      optimism <- NA
+      if (method == "boot_simple"){
+        corrected <- res$simple
+        B_actual <- res$n_simple
+      } else if (method == "cv_average"){
+        corrected <- res$cv_average
+        B_actual <- res$n_cv_average
+      }
+    }
+
+    if (any(B_actual < B)) {
+      message(strwrap("Note there were some unsuccessful resamples (see n column in
                     summary). It is worth trying to understand why these unsuccessful
                     runs are happening. validate will print the warnings and messages
                     encountered.",
-                    prefix = " ", initial = ""),
-"\n\nThe greater the proportion of samples lost the more important it is to figure out the source and try to address. See ?validate details for potential sources.")
-  }
+                      prefix = " ", initial = ""),
+              "\n\nThe greater the proportion of samples lost the more important it is to figure out the source and try to address. See ?validate details for potential sources.")
+    }
+  } else{
+    fit <- model_fun(data=data, ...)
+    p_app <- pred_fun(model = fit, data = data, ...)
+    apparent <- score_fun(y = data[[outcome]], p = p_app, ...)
+    optimism <- B_actual <- corrected <-  rep(NA_real_, times = length(apparent))
 
-  # If you requested estimates for a calibration
-  # curve this aspect could be causing issues (these estimates can be
-  #                                            assessed by calling summary(object, ignore_scores='')).
+    res <- NULL
+  }
 
   out <- list(apparent = apparent,
               optimism = optimism,
@@ -291,7 +298,9 @@ validate <- function(fit,
 #' @param ... ignored
 #'
 #' @return a data.frame with 4 columns (apparent score, optimism, bias-corrected score, number of successful resamples/folds)
-#' and one row per score. Not all methods produce an optimism estimate so this row may be all NA.
+#' and one row per score. Not all methods produce an optimism estimate so this row may be all NA. If confidence intervals
+#' have been added for all measures via \code{\link{confint.internal_validate}}, two additional columns containing lower and upper bounds for
+#' bias-corrected performance.
 #' @export
 #'
 #' @examples
@@ -313,10 +322,18 @@ validate <- function(fit,
 summary.internal_validate <- function(object, ignore_scores="^cal_plot", ...){
   i <- !grepl(ignore_scores, names(object$apparent))
 
-  out <- rbind(object$apparent[i], object$optimism[i], object$corrected[i], object$B_actual[i])
-  rownames(out) <- c("Apparent", "Optimism", "Corrected", "n")
+  if ("confint" %in% names(object) & all( names(object$corrected[i]) %in% rownames(object$confint$ci$Corrected) )){
 
-  out <- data.frame(t(out))
+    out <- cbind(object$apparent[i], object$optimism[i], object$corrected[i],
+                 object$B_actual[i], object$confint$ci$Corrected[names(object$corrected[i]), ])
+    colnames(out) <- c("Apparent", "Optimism", "Corrected", "n", "Corr_lower", "Corr_upper")
+
+  } else{
+    out <- cbind(object$apparent[i], object$optimism[i], object$corrected[i], object$B_actual[i])
+    colnames(out) <- c("Apparent", "Optimism", "Corrected", "n")
+  }
+
+  out <- data.frame(out)
   class(out) <- c("internal_validatesummary", "data.frame")
 
   return(out)

@@ -6,3 +6,4 @@ vignettes/pminternal-comparisons.Rmd
 ^docs$
 ^pkgdown$
 ^\.github$
+^vignettes/articles$

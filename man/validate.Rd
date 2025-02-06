@@ -6,7 +6,7 @@
 \usage{
 validate(
   fit,
-  method = c("boot_optimism", "boot_simple", ".632", "cv_optimism", "cv_average"),
+  method = c("boot_optimism", "boot_simple", ".632", "cv_optimism", "cv_average", "none"),
   data,
   outcome,
   model_fun,
@@ -27,7 +27,7 @@ compatible with this function. If fit is provided the arguments data, outcome,
 model_fun, and pred_fun are all ignored.}
 
 \item{method}{bias-correction method. Valid options are "boot_optimism", "boot_simple",
-".632", "cv_optimism", or "cv_average". See details.}
+".632", "cv_optimism", "cv_average", or "none" (return apparent performance). See details.}
 
 \item{data}{a data.frame containing data used to fit development model}
 
@@ -69,7 +69,7 @@ Performs internal validation of a prediction model development procedure via boo
 or cross-validation. Many model types are supported via the \code{insight} and \code{marginaleffects}
 packages or users can supply user-defined functions that implement the model development
 procedure and retrieve predictions. Bias-corrected scores and estimates of optimism (where applicable)
-are provided.
+are provided. See \code{\link{confint.internal_validate}} for calculation of confidence intervals.
 }
 \details{
 Internal validation can provide bias-corrected estimates of performance (e.g., C-statistic/AUC)

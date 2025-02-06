@@ -213,7 +213,7 @@ boot_optimism <- function(data, outcome,
     stability <- do.call(cbind, lapply(S, function(x) x$result$p_orig))
     stability <- cbind(p_app = p_app, stability)
   } else{
-    simple_boot <- stability <- NULL
+    simple_boot <- stability <- nsimple_boot <- NULL
   }
 
   out <- list("apparent" = score_app,

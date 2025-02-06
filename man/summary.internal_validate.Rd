@@ -17,7 +17,9 @@ is desired (see \code{\link{cal_plot}}) and these are ignored by default.}
 }
 \value{
 a data.frame with 4 columns (apparent score, optimism, bias-corrected score, number of successful resamples/folds)
-and one row per score. Not all methods produce an optimism estimate so this row may be all NA.
+and one row per score. Not all methods produce an optimism estimate so this row may be all NA. If confidence intervals
+have been added for all measures via \code{\link{confint.internal_validate}}, two additional columns containing lower and upper bounds for
+bias-corrected performance.
 }
 \description{
 Summarize a internal_validate object

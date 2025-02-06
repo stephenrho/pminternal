@@ -4,7 +4,18 @@
 \alias{cal_plot}
 \title{Plot apparent and bias-corrected calibration curves}
 \usage{
-cal_plot(x, xlim, ylim, xlab, ylab, app_col, bc_col, app_lty, bc_lty)
+cal_plot(
+  x,
+  xlim,
+  ylim,
+  xlab,
+  ylab,
+  app_col,
+  bc_col,
+  app_lty,
+  bc_lty,
+  plotci = c("if", "yes", "no")
+)
 }
 \arguments{
 \item{x}{an object returned from \code{\link{validate}}. Original call should
@@ -25,12 +36,17 @@ have specified 'eval' argument. See \code{\link{score_binary}}.}
 \item{app_lty}{line type of the apparent calibration curve (default = 1)}
 
 \item{bc_lty}{line type of the bias-corrected calibration curve (default = 2)}
+
+\item{plotci}{plot confidence intervals ('yes') or not ('no'). If 'yes' x should have confidence intervals
+added by \code{\link{confint.internal_validate}}. 'if' (default) plots CIs if they are
+available.}
 }
 \value{
 plots apparent and bias-corrected curves. Silently returns a data.frame
 that can be used to produce a more 'publication ready' plot. Columns are as
 follows: predicted = values for the x-axis, apparent = value of apparent curve,
-bias_corrected = value of bias-corrected curve.
+bias_corrected = value of bias-corrected curve. Confidence intervals are included
+if available.
 }
 \description{
 Plot apparent and bias-corrected calibration curves

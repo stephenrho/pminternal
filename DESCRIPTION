@@ -40,3 +40,4 @@ Suggests:
     rms,
     mgcv
 VignetteBuilder: knitr
+Config/Needs/website: rmarkdown

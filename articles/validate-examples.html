@@ -34,7 +34,8 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/validate-examples.html">More `model_fun` examples for `pminternal::validate`</a></li>
+<li><a class="dropdown-item" href="../articles/missing-data.html">Handling missing data</a></li>
+    <li><a class="dropdown-item" href="../articles/validate-examples.html">More `model_fun` examples for `pminternal::validate`</a></li>
   </ul>
 </li>
       </ul>
@@ -104,7 +105,7 @@ elimination using AIC.</p>
 <span></span>
 <span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">gusto</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, model_fun <span class="op">=</span> <span class="va">stepglm</span>, </span>
 <span>         pred_fun <span class="op">=</span> <span class="va">steppred</span>, method <span class="op">=</span> <span class="st">"cv_opt"</span>, B <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           Apparent Optimism Corrected  n</span></span>
+<span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
 <span><span class="co">#&gt; C           0.7996 -0.00099   0.80058 10</span></span>
 <span><span class="co">#&gt; Brier       0.0599  0.00000   0.05992 10</span></span>
 <span><span class="co">#&gt; Intercept   0.0000  0.00074  -0.00074 10</span></span>
@@ -156,7 +157,7 @@ lasso (L1) penalization. It is simple to modify this to implement ridge
 <span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"cv_optimism"</span>, data <span class="op">=</span> <span class="va">gusto</span>, </span>
 <span>         outcome <span class="op">=</span> <span class="st">"y"</span>, model_fun <span class="op">=</span> <span class="va">ridge_fun</span>, </span>
 <span>         pred_fun <span class="op">=</span> <span class="va">ridge_predict</span>, B <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           Apparent Optimism Corrected  n</span></span>
+<span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
 <span><span class="co">#&gt; C           0.7998 -0.00080    0.8006 10</span></span>
 <span><span class="co">#&gt; Brier       0.0599  0.00000    0.0599 10</span></span>
 <span><span class="co">#&gt; Intercept   0.2035 -0.00099    0.2045 10</span></span>
@@ -285,7 +286,7 @@ our <code>model_fun</code> and allow for optional arguments of
 <span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"cv_optimism"</span>, data <span class="op">=</span> <span class="va">gusto</span>, </span>
 <span>         outcome <span class="op">=</span> <span class="st">"y"</span>, model_fun <span class="op">=</span> <span class="va">rf_fun</span>, </span>
 <span>         pred_fun <span class="op">=</span> <span class="va">rf_predict</span>, B <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           Apparent Optimism Corrected  n</span></span>
+<span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
 <span><span class="co">#&gt; C            0.962  0.00028     0.961 10</span></span>
 <span><span class="co">#&gt; Brier        0.045  0.00000     0.045 10</span></span>
 <span><span class="co">#&gt; Intercept    3.611 -0.07983     3.691 10</span></span>
@@ -300,7 +301,7 @@ our <code>model_fun</code> and allow for optional arguments of
 <span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"cv_optimism"</span>, data <span class="op">=</span> <span class="va">gusto</span>, </span>
 <span>         outcome <span class="op">=</span> <span class="st">"y"</span>, model_fun <span class="op">=</span> <span class="va">rf_fun</span>, </span>
 <span>         pred_fun <span class="op">=</span> <span class="va">rf_predict</span>, B <span class="op">=</span> <span class="fl">10</span>, max.depth <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           Apparent  Optimism Corrected  n</span></span>
+<span><span class="co">#&gt;           apparent  optimism corrected  n</span></span>
 <span><span class="co">#&gt; C            0.816  0.000045     0.816 10</span></span>
 <span><span class="co">#&gt; Brier        0.060  0.000000     0.060 10</span></span>
 <span><span class="co">#&gt; Intercept    2.251 -0.038992     2.290 10</span></span>

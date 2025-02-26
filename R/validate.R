@@ -162,7 +162,7 @@ validate <- function(fit,
 
   if (!missing(fit)){
     if (any(#!missing(data), !missing(outcome),
-            !missing(model_fun), !missing(pred_fun))){
+      !missing(model_fun), !missing(pred_fun))){
       warning("If fit is specified, model_fun and pred_fun are ignored")
     }
     # check class
@@ -186,14 +186,6 @@ validate <- function(fit,
     }
 
     pred_fun <- function(model, data, ...){
-      #insight::get_predicted(x = model, data = data, ci=NULL)
-      # metd <- marginaleffects:::type_dictionary_build()
-      # metd <- metd[!duplicated(metd$class), ]
-      # if (class(model)[1] %in% metd$class){
-      #   type <- metd$type[which(class(model)[1] == metd$class)]
-      # } else{
-      #   type <- "response"
-      # }
       if (is(model, "lrm")){
         type <- "fitted"
       } else{
@@ -322,18 +314,23 @@ validate <- function(fit,
 summary.internal_validate <- function(object, ignore_scores="^cal_plot", ...){
   i <- !grepl(ignore_scores, names(object$apparent))
 
-  if ("confint" %in% names(object) & all( names(object$corrected[i]) %in% rownames(object$confint$ci$Corrected) )){
+  if ("confint" %in% names(object)){
+    #if ("confint" %in% names(object) & all( names(object$corrected[i]) %in% rownames(object$confint$ci$Corrected) )){
 
-    out <- cbind(object$apparent[i], object$optimism[i], object$corrected[i],
-                 object$B_actual[i], object$confint$ci$Corrected[names(object$corrected[i]), ])
-    colnames(out) <- c("Apparent", "Optimism", "Corrected", "n", "Corr_lower", "Corr_upper")
+    out <- data.frame(cbind(object$apparent[i], object$optimism[i],
+                            object$corrected[i], object$B_actual[i]))
+    out <- merge(x=out, y=data.frame(object$confint$ci$Corrected),
+                 by="row.names", all.x=TRUE)
+    row.names(out) <- out$Row.names
+    out$Row.names <- NULL
+    colnames(out) <- c("apparent", "optimism", "corrected", "n", "corrected_lower", "corrected_upper")
 
   } else{
-    out <- cbind(object$apparent[i], object$optimism[i], object$corrected[i], object$B_actual[i])
-    colnames(out) <- c("Apparent", "Optimism", "Corrected", "n")
+    out <- data.frame(cbind(object$apparent[i], object$optimism[i],
+                            object$corrected[i], object$B_actual[i]))
+    colnames(out) <- c("apparent", "optimism", "corrected", "n")
   }
 
-  out <- data.frame(out)
   class(out) <- c("internal_validatesummary", "data.frame")
 
   return(out)

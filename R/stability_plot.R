@@ -168,6 +168,8 @@ calibration_stability <- function(x, calib_args,
     }
   }
 
+  calib_args[["plot"]] <- FALSE
+
   # make calibration curves
   curves <- apply(stabil, 2, function(p){
     calib_args[["p"]] <- p

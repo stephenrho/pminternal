@@ -103,6 +103,7 @@ score_binary <- function(y, p, ...){
   } else{
     calib_args <- cal_defaults() # pmcalib_defaults
   }
+  calib_args[["plot"]] <- FALSE
 
   # avoid error if resample returns constant y or p
   if (length(unique(y)) == 1 | length(unique(p)) == 1){
@@ -115,7 +116,8 @@ score_binary <- function(y, p, ...){
     # cal <- pmcalibration::pmcalibration(y=rbinom(100, 1, prob = .5),
     #                              p=runif(100), smooth = "none")
     cal <- pmcalibration::pmcalibration(y=c(0,0,0,1,1,1),
-                                        p=c(.2,.2,.2,.6,.6,.6), smooth = "none", ci = "none")
+                                        p=c(.2,.2,.2,.6,.6,.6),
+                                        smooth = "none", ci = "none", plot = FALSE)
 
     cal$metrics[1:(length(cal$metrics))] <- NA_real_
 

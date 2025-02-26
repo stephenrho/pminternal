@@ -9,3 +9,4 @@ cran-comments.md
 CRAN-SUBMISSION
 docs
 *.DS_Store
+vignettes/articles/*

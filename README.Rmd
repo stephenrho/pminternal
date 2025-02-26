@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal is to offer a package that can produce bias-corrected performance measures for binary outcomes for a range of model development approaches available in R (similar to `rms::validate`). Also contains functions for assessing prediction stability as described here https://doi.org/10.1002/bimj.202200302.  
+The goal is to offer a package that can produce bias-corrected performance measures for clinical prediction models with binary outcomes for a range of model development approaches available in R (similar to `rms::validate`). There are also functions for assessing prediction stability as described here https://doi.org/10.1002/bimj.202200302.  
 
 To install development version:
 
@@ -55,7 +55,7 @@ mod <- glm(y ~ ., data = dat, family = "binomial")
 
 ```
 
-The other available methods for calculating bias corrected performance are the simple bootstrap (`boot_simple`), 0.632 bootstrap optimism (`.632`), optimism via cross-validation (`cv_optimism`), and regular cross-validation (`cv_average`). Please see `?pminternal::validate` and the references therein. Bias corrected calibration curves can also be produced (see `cal_plot`).
+The other available methods for calculating bias corrected performance are the simple bootstrap (`boot_simple`), 0.632 bootstrap optimism (`.632`), optimism via cross-validation (`cv_optimism`), and regular cross-validation (`cv_average`). Please see `?pminternal::validate` and the references therein. Bias corrected calibration curves can also be produced (see `cal_plot`). Confidence intervals can also be added via `confint`.
 
 For models that cannot be supported via `fit`, users are able to specify their own model (`model_fun`) and prediction (`pred_fun`) functions as shown below. Note that when specifying user-defined model and prediction functions the data and outcome must also be provided. It is crucial that `model_fun` implements the entire model development procedure (variable selection, hyperparameter tuning, etc). For more examples, see `vignette("pminternal")` and `vignette("validate-examples")`.
 

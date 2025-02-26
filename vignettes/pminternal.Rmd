@@ -97,10 +97,10 @@ ggplot(calp, aes(x=predicted)) +
 
 ```
 
-Finally, bootstrap confidence intervals can be calculated (see https://onlinelibrary.wiley.com/doi/10.1002/sim.9148 for details).
+Finally, bootstrap confidence intervals can be calculated (see https://onlinelibrary.wiley.com/doi/10.1002/sim.9148 and `confint.internal_validate` for details).
 
 ```{r}
-confint(mod_iv, parm = c("C", "Brier"), method = "shifted", R=100)
+(mod_iv <- confint(mod_iv, method = "shifted", R=100))
 ```
 
 Additional models that could be supplied via `fit` and that I have tested on this gusto example are given below. Please let me know if you run into trouble with a model class that you feel should work with `fit`. The chunk below is not evaluated for build time so does not print any output.

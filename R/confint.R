@@ -65,8 +65,14 @@ confint.internal_validate <- function(object, parm, level = 0.95,
   pnames <- names(app)
   if (missing(parm))
     parm <- pnames
-  else if (is.numeric(parm))
-    parm <- pnames[parm]
+  else {
+    if (length(parm) == 0){
+      parm <- pnames
+    }
+    if (is.numeric(parm)) {
+      parm <- pnames[parm]
+    }
+  }
 
   # make function to bootstrap
   vcall <- object$call

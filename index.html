@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">pminternal</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/missing-data.html">Handling missing data</a></li>
-    <li><a class="dropdown-item" href="articles/validate-examples.html">More `model_fun` examples for `pminternal::validate`</a></li>
+    <li><a class="dropdown-item" href="articles/validate-examples.html">More examples</a></li>
   </ul>
 </li>
       </ul>
@@ -58,12 +58,12 @@
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>The goal is to offer a package that can produce bias-corrected performance measures for clinical prediction models with binary outcomes for a range of model development approaches available in R (similar to <code><a href="https://rdrr.io/pkg/rms/man/validate.html" class="external-link">rms::validate</a></code>). There are also functions for assessing prediction stability as described here <a href="https://doi.org/10.1002/bimj.202200302" class="external-link uri">https://doi.org/10.1002/bimj.202200302</a>.</p>
-<p>To install development version:</p>
+<p>The goal is to offer a package that can produce bias-corrected performance measures for clinical prediction models with binary outcomes for a range of model development approaches available in R (similar to <code><a href="https://rdrr.io/pkg/rms/man/validate.html" class="external-link">rms::validate</a></code>). There are also functions for assessing prediction stability, as described in <a href="https://doi.org/10.1002/bimj.202200302" class="external-link">Riley and Collins (2023)</a>.</p>
+<p>To install:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"stephenrho/pminternal"</span><span class="op">)</span></span></code></pre></div>
-<p>Please send feedback to <a href="mailto:steverho89@gmail.com" class="email">steverho89@gmail.com</a> or open an issue.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pminternal"</span><span class="op">)</span> <span class="co"># cran</span></span>
+<span><span class="co"># or </span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"stephenrho/pminternal"</span><span class="op">)</span> <span class="co"># development</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>

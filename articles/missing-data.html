@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">pminternal</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/missing-data.html">Handling missing data</a></li>
-    <li><a class="dropdown-item" href="../articles/validate-examples.html">More `model_fun` examples for `pminternal::validate`</a></li>
+    <li><a class="dropdown-item" href="../articles/validate-examples.html">More examples</a></li>
   </ul>
 </li>
       </ul>
@@ -67,11 +67,14 @@
     
     
 <p>Missing data can occur at various stages during the development and
-assessment of clinical prediction models. The example code below shows
-how to implement two approaches to dealing with missing predictor
-variables: stacked multiple imputation and pattern submodels. Both
-approaches are implemented with <code>glm</code> but could be easily
-modified to work with other model fitting functions.</p>
+assessment of clinical prediction models. Given the focus on prediction,
+<code>validate</code> removes rows where the outcome is missing. But it
+is possible to write user-defined model and prediction functions to
+allow for missing predictors. The example code below shows how to
+implement two approaches to dealing with missing predictor variables:
+stacked multiple imputation and pattern submodels. Both approaches are
+implemented with <code>glm</code> but could be easily modified to work
+with other model fitting functions.</p>
 <p>The code below simulates some data with 5 predictors, 3 of which have
 missing values.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -122,8 +125,8 @@ missing values.</p>
 <div class="section level2">
 <h2 id="stacked-multiple-imputation">Stacked multiple imputation<a class="anchor" aria-label="anchor" href="#stacked-multiple-imputation"></a>
 </h2>
-<p>This approach is discussed by <a href="https://academic.oup.com/clinchem/article-abstract/55/5/994/5631751?redirectedFrom=fulltext" class="external-link">Janssen
-et al. (2009)</a> and <a href="https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8682" class="external-link">Hoogland
+<p>This approach is discussed by <a href="https://doi.org/10.1373/clinchem.2008.115345" class="external-link">Janssen et
+al. (2009)</a> and <a href="https://doi.org/10.1002/sim.8682" class="external-link">Hoogland
 et al. (2020)</a> and involves the data used for ‘training’ the model to
 be available at validation. Multiple imputation is used at development
 and model coefficients are pooled across the
@@ -202,12 +205,12 @@ assessed.</p>
 </h2>
 <p>This approach involves fitting a separate prediction model for each
 pattern of missing data <em>using only the data from that pattern</em>
-<a href="https://academic.oup.com/biostatistics/article/21/2/236/5092384" class="external-link">(Mercaldo
-&amp; Blume, 2020)</a>. For example, if the pattern “00100” signifies
-that variable 3 is missing and others are observed, a model omitting
-variable 3 is fit using rows where the missing pattern is “00100”. When
-testing the model on new data the model corresponding to the missing
-data pattern for each new observation is used.</p>
+<a href="https://doi.org/10.1093/biostatistics/kxy040" class="external-link">(Mercaldo &amp;
+Blume, 2020)</a>. For example, if the pattern “00100” signifies that
+variable 3 is missing and others are observed, a model omitting variable
+3 is fit using rows where the missing pattern is “00100”. When testing
+the model on new data the model corresponding to the missing data
+pattern for each new observation is used.</p>
 <p>As shown below we have 8 missing data patterns.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">md</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://amices.org/mice/reference/md.pattern.html" class="external-link">md.pattern</a></span><span class="op">(</span><span class="va">datmis</span><span class="op">)</span></span></code></pre></div>
@@ -327,11 +330,6 @@ patterns.</p>
 <span><span class="co">#&gt; E90       0.000001  -0.0856     0.086 10</span></span>
 <span><span class="co">#&gt; Emax      0.000002  -0.1358     0.136 10</span></span>
 <span><span class="co">#&gt; ECI       0.000000  -0.5370     0.537 10</span></span></code></pre></div>
-<p>Note: Given the focus on prediction, <code>validate</code> removes
-rows where the outcome is missing. Though, if needed, it would be
-possible to circumvent this with user defined model and prediction
-functions with indicators for the missing outcome (and the outcome
-filled in with 0/1 in <code>data</code>).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

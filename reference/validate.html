@@ -15,7 +15,7 @@ are provided. See confint.internal_validate for calculation of confidence interv
 
     <a class="navbar-brand me-2" href="../index.html">pminternal</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,7 +28,7 @@ are provided. See confint.internal_validate for calculation of confidence interv
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/missing-data.html">Handling missing data</a></li>
-    <li><a class="dropdown-item" href="../articles/validate-examples.html">More `model_fun` examples for `pminternal::validate`</a></li>
+    <li><a class="dropdown-item" href="../articles/validate-examples.html">More examples</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -151,7 +151,8 @@ supplied <code><a href="https://easystats.github.io/insight/reference/get_data.h
 this will result in complete cases being used. User-defined model and predict functions can
 be specified to handle missing values among predictor variables. Currently any user supplied data will
 have rows with missing outcome values removed.</p>
-<p><b>method</b></p><dl><dt>boot_optimism</dt>
+<p><b>method</b>
+Different options for the method argument are described below:</p><dl><dt>boot_optimism</dt>
 <dd><p>(default) estimates optimism for each score and subtracts from apparent score (score calculated
 with the original/development model evaluated on the original sample). A new model is fit using the same procedure
 using each bootstrap resample. Scores are calculated when applying the boot model to the boot sample (\(S_{boot}\))
@@ -179,39 +180,34 @@ implemented in <code><a href="https://rdrr.io/pkg/rms/man/validate.html" class="
 fold evaluated on the test/held out data. This approach is described and compared to "boot_optimism" and ".632" in
 Steyerberg et al. (2001).</p></dd>
 
-
-</dl><p><b>Calibration curves</b></p><dl>
-To make calibration curves and calculate the associated estimates (ICI, ECI, etc - see <a href="score_binary.html">score_binary</a>)
-validate uses the default arguments in <a href="cal_defaults.html">cal_defaults</a>. These arguments are passed to the pmcalibration package
-(see ?pmcalibration::pmcalibration for options).
-
-If a calibration plot (apparent vs bias corrected calibration curves via <a href="cal_plot.html">cal_plot</a>)
+</dl><p><b>Calibration curves</b>
+To make calibration curves and calculate the associated estimates (ICI, ECI, etc - see <code><a href="score_binary.html">score_binary</a></code>)
+<code>validate</code> uses the default arguments in <code><a href="cal_defaults.html">cal_defaults</a></code>. These arguments are passed to the <code>pmcalibration</code> package
+(see <code><a href="https://rdrr.io/pkg/pmcalibration/man/pmcalibration.html" class="external-link">?pmcalibration::pmcalibration</a></code> for options).</p>
+<p>If a calibration plot (apparent vs bias corrected calibration curves via <code><a href="cal_plot.html">cal_plot</a></code>)
 is desired, the argument 'eval' should be provided. This should be the points at which to evaluate
 the calibration curve on each boot resample or crossvalidation fold. A good option would be
-calib_args = list(eval = seq(min(p), max(p), length.out=100)); where p are predictions from the
-original model evaluated on the original data.
-
-</dl><p><b>Number of resamples/folds is less than requested</b></p><dl>
-If the model_fun produces an error or if score_binary is supplied with constant predictions
+<code>calib_args = list(eval = seq(min(p), max(p), length.out=100))</code>; where p are predictions from the
+original model evaluated on the original data.</p>
+<p><b>Number of resamples/folds is less than requested</b>
+If the <code>model_fun</code> produces an error or if <code>score_binary</code> is supplied with constant predictions
 or outcomes (e.g. all(y == 0)) the returned scores will all be NA. These will be omitted from the calculation
 of optimism or other bias-corrected estimates (cv_average, boot_simple) and the number of successful resamples/folds
-will be &lt; B. validate collects errors and will produce a warning summarizing them. The number of successful
-samples is given in the 'n' column in the printed summary of an 'internal_validate' object.
-
-It is important to understand what is causing the loss of resamples/folds. Some potential sources (which will need to be added to) are that
+will be &lt; B. <code>validate</code> collects errors and will produce a warning summarizing them. The number of successful
+samples is given in the 'n' column in the printed summary of an 'internal_validate' object.</p>
+<p>It is important to understand what is causing the loss of resamples/folds. Some potential sources (which will need to be added to) are that
 for rare events the resamples/folds may be resulting in samples that have zero outcomes. For 'cv_*' this will especially
 be the case if B (n folds) is set high. There may be problems with factor/binary predictor variables with rare levels, which could be dealt with
-by specifying a model_fun that omits variables for the model formula if only one level is present. The issue may be related to the construction
-of calibration curves and may be addressed by more carefully selecting settings (see section above).
-
-</dl></div>
+by specifying a <code>model_fun</code> that omits variables for the model formula if only one level is present. The issue may be related to the construction
+of calibration curves and may be addressed by more carefully selecting settings (see section above).</p>
+    </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Steyerberg, E. W., Harrell Jr, F. E., Borsboom, G. J., Eijkemans, M. J. C., Vergouwe, Y., &amp; Habbema, J. D. F. (2001). Internal validation of predictive models: efficiency of some procedures for logistic regression analysis. Journal of clinical epidemiology, 54(8), 774-781.</p>
 <p>Harrell Jr F. E. (2015). Regression Modeling Strategies: with applications to linear models, logistic and ordinal regression, and survival analysis. New York: Springer Science, LLC.</p>
 <p>Efron (1983). “Estimating the error rate of a prediction rule: improvement on cross-validation”. Journal of the American Statistical Association, 78(382):316-331</p>
 <p>Van Calster, B., Steyerberg, E. W., Wynants, L., and van Smeden, M. (2023). There is no such thing as a validated prediction model. BMC medicine, 21(1), 70.</p>
-<p>Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.</p>
+<p>Riley, R. D., &amp; Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302</p>
     </div>
 
     <div class="section level2">

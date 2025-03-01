@@ -85,6 +85,7 @@ be specified to handle missing values among predictor variables. Currently any u
 have rows with missing outcome values removed.
 
 \bold{method}
+Different options for the method argument are described below:
 \describe{
 \item{boot_optimism}{ (default) estimates optimism for each score and subtracts from apparent score (score calculated
 with the original/development model evaluated on the original sample). A new model is fit using the same procedure
@@ -103,11 +104,9 @@ in performance measure between predictions made on the training vs test (held ou
 implemented in \code{rms::validate} with method="crossvalidation".}
 \item{cv_average}{bias corrected scores are the average of scores calculated by assessing the model developed on each
 fold evaluated on the test/held out data. This approach is described and compared to "boot_optimism" and ".632" in
-Steyerberg et al. (2001).}
-}
+Steyerberg et al. (2001).}}
 
 \bold{Calibration curves}
-\describe{
 To make calibration curves and calculate the associated estimates (ICI, ECI, etc - see \code{\link{score_binary}})
 \code{validate} uses the default arguments in \code{\link{cal_defaults}}. These arguments are passed to the \code{pmcalibration} package
 (see \code{?pmcalibration::pmcalibration} for options).
@@ -117,10 +116,8 @@ is desired, the argument 'eval' should be provided. This should be the points at
 the calibration curve on each boot resample or crossvalidation fold. A good option would be
 \code{calib_args = list(eval = seq(min(p), max(p), length.out=100))}; where p are predictions from the
 original model evaluated on the original data.
-}
 
 \bold{Number of resamples/folds is less than requested}
-\describe{
 If the \code{model_fun} produces an error or if \code{score_binary} is supplied with constant predictions
 or outcomes (e.g. all(y == 0)) the returned scores will all be NA. These will be omitted from the calculation
 of optimism or other bias-corrected estimates (cv_average, boot_simple) and the number of successful resamples/folds
@@ -132,7 +129,6 @@ for rare events the resamples/folds may be resulting in samples that have zero o
 be the case if B (n folds) is set high. There may be problems with factor/binary predictor variables with rare levels, which could be dealt with
 by specifying a \code{model_fun} that omits variables for the model formula if only one level is present. The issue may be related to the construction
 of calibration curves and may be addressed by more carefully selecting settings (see section above).
-}
 }
 \examples{
 library(pminternal)
@@ -160,5 +156,5 @@ Efron (1983). “Estimating the error rate of a prediction rule: improvement on 
 
 Van Calster, B., Steyerberg, E. W., Wynants, L., and van Smeden, M. (2023). There is no such thing as a validated prediction model. BMC medicine, 21(1), 70.
 
-Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302
 }

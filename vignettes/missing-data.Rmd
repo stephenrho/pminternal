@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Missing data can occur at various stages during the development and assessment of clinical prediction models. The example code below shows how to implement two approaches to dealing with missing predictor variables: stacked multiple imputation and pattern submodels. Both approaches are implemented with `glm` but could be easily modified to work with other model fitting functions.
+Missing data can occur at various stages during the development and assessment of clinical prediction models. Given the focus on prediction, `validate` removes rows where the outcome is missing. But it is possible to write user-defined model and prediction functions to allow for missing predictors. The example code below shows how to implement two approaches to dealing with missing predictor variables: stacked multiple imputation and pattern submodels. Both approaches are implemented with `glm` but could be easily modified to work with other model fitting functions.
 
 The code below simulates some data with 5 predictors, 3 of which have missing values. 
 
@@ -49,7 +49,7 @@ mod <- glm(y ~ ., data = datcomp, family = "binomial")
 
 # Stacked multiple imputation
 
-This approach is discussed by [Janssen et al. (2009)](https://academic.oup.com/clinchem/article-abstract/55/5/994/5631751?redirectedFrom=fulltext) and [Hoogland et al. (2020)](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8682) and involves the data used for 'training' the model to be available at validation. Multiple imputation is used at development and model coefficients are pooled across the $m$ imputed data sets. At validation or testing, the new data is stacked onto the data used for development and multiple imputation algorithm is run on the combined data set. The two articles above point out that it is important that the new data at validation does not dominate the imputation model and therefore advocate doing stacked imputation one row of the validation set at a time. Here we use the `ignore` argument to `mice::mice` to omit the validation data from the imputation model but still impute its missing observations. For each individual in the validation/test dataset linear predictors are obtained from each imputed dataset and then averaged before using the inverse logit transform to convert to risk.
+This approach is discussed by [Janssen et al. (2009)](https://doi.org/10.1373/clinchem.2008.115345) and [Hoogland et al. (2020)](https://doi.org/10.1002/sim.8682) and involves the data used for 'training' the model to be available at validation. Multiple imputation is used at development and model coefficients are pooled across the $m$ imputed data sets. At validation or testing, the new data is stacked onto the data used for development and multiple imputation algorithm is run on the combined data set. The two articles above point out that it is important that the new data at validation does not dominate the imputation model and therefore advocate doing stacked imputation one row of the validation set at a time. Here we use the `ignore` argument to `mice::mice` to omit the validation data from the imputation model but still impute its missing observations. For each individual in the validation/test dataset linear predictors are obtained from each imputed dataset and then averaged before using the inverse logit transform to convert to risk.
 
 Note the functions below use the `mice` default arguments (5 imputed datasets via predictive mean matching as all predictors are continuous) but this could be easily tweaked. The functions also assume that all variables should be used in the imputation model (including `y`) but this could be changed via `predictorMatrix`.
 
@@ -96,7 +96,7 @@ A drawback of this approach is that it requires the development data to be avail
 
 # Pattern submodels
 
-This approach involves fitting a separate prediction model for each pattern of missing data _using only the data from that pattern_ [(Mercaldo & Blume, 2020)](https://academic.oup.com/biostatistics/article/21/2/236/5092384). For example, if the pattern "00100" signifies that variable 3 is missing and others are observed, a model omitting variable 3 is fit using rows where the missing pattern is "00100". When testing the model on new data the model corresponding to the missing data pattern for each new observation is used.
+This approach involves fitting a separate prediction model for each pattern of missing data _using only the data from that pattern_ [(Mercaldo & Blume, 2020)](https://doi.org/10.1093/biostatistics/kxy040). For example, if the pattern "00100" signifies that variable 3 is missing and others are observed, a model omitting variable 3 is fit using rows where the missing pattern is "00100". When testing the model on new data the model corresponding to the missing data pattern for each new observation is used.
 
 As shown below we have 8 missing data patterns. 
 
@@ -196,4 +196,4 @@ pred_ps <- function(model, data, ...){
                     outcome = "y", method = "cv_o"))
 ```
 
-Note: Given the focus on prediction, `validate` removes rows where the outcome is missing. Though, if needed, it would be possible to circumvent this with user defined model and prediction functions with indicators for the missing outcome (and the outcome filled in with 0/1 in `data`). 
+

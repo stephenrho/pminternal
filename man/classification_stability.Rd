@@ -71,5 +71,5 @@ classification_stability(m1_iv, threshold=.2)
 
 }
 \references{
-Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302
 }

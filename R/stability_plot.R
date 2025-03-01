@@ -24,7 +24,7 @@
 #' Invisibly returns stability matrix (where column 1 are original predictions)
 #' that can be used for creating plots with other packages/software.
 #'
-#' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+#' @references Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302
 #'
 #' @export
 #'
@@ -110,7 +110,7 @@ prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
 #' Invisibly returns a list containing data for each curve (p=x-axis, pc=y-axis).
 #' The first element of this list is the apparent curve (original model on original outcome).
 #'
-#' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+#' @references Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302
 #'
 #' @export
 #'
@@ -221,7 +221,7 @@ calibration_stability <- function(x, calib_args,
 #' @return plots calibration (in)stability.
 #' Invisibly returns a list containing individual and average MAPE.
 #'
-#' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+#' @references Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302
 #'
 #' @export
 #'
@@ -302,7 +302,7 @@ mape_stability <- function(x, xlim, ylim, xlab, ylab, pch, cex,
 #' @return plots classification (in)stability.
 #' Invisibly returns estimates of CII for each observation.
 #'
-#' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+#' @references Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302
 #'
 #' @export
 #'
@@ -380,7 +380,7 @@ classification_stability <- function(x, threshold, xlim, ylim,
 #' Invisibly returns a list containing data for each curve. These are returned from \code{dcurves::dca}.
 #' The first element of this list is the apparent curve (original model on original outcome).
 #'
-#' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+#' @references Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302
 #'
 #' @export
 #'

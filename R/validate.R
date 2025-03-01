@@ -55,6 +55,7 @@
 #' have rows with missing outcome values removed.
 #'
 #' \bold{method}
+#' Different options for the method argument are described below:
 #' \describe{
 #' \item{boot_optimism}{ (default) estimates optimism for each score and subtracts from apparent score (score calculated
 #' with the original/development model evaluated on the original sample). A new model is fit using the same procedure
@@ -73,11 +74,9 @@
 #' implemented in \code{rms::validate} with method="crossvalidation".}
 #' \item{cv_average}{bias corrected scores are the average of scores calculated by assessing the model developed on each
 #' fold evaluated on the test/held out data. This approach is described and compared to "boot_optimism" and ".632" in
-#' Steyerberg et al. (2001).}
-#' }
+#' Steyerberg et al. (2001).}}
 #'
 #' \bold{Calibration curves}
-#' \describe{
 #' To make calibration curves and calculate the associated estimates (ICI, ECI, etc - see \code{\link{score_binary}})
 #' \code{validate} uses the default arguments in \code{\link{cal_defaults}}. These arguments are passed to the \code{pmcalibration} package
 #' (see \code{?pmcalibration::pmcalibration} for options).
@@ -87,10 +86,8 @@
 #' the calibration curve on each boot resample or crossvalidation fold. A good option would be
 #' \code{calib_args = list(eval = seq(min(p), max(p), length.out=100))}; where p are predictions from the
 #' original model evaluated on the original data.
-#' }
 #'
 #' \bold{Number of resamples/folds is less than requested}
-#' \describe{
 #' If the \code{model_fun} produces an error or if \code{score_binary} is supplied with constant predictions
 #' or outcomes (e.g. all(y == 0)) the returned scores will all be NA. These will be omitted from the calculation
 #' of optimism or other bias-corrected estimates (cv_average, boot_simple) and the number of successful resamples/folds
@@ -102,7 +99,6 @@
 #' be the case if B (n folds) is set high. There may be problems with factor/binary predictor variables with rare levels, which could be dealt with
 #' by specifying a \code{model_fun} that omits variables for the model formula if only one level is present. The issue may be related to the construction
 #' of calibration curves and may be addressed by more carefully selecting settings (see section above).
-#' }
 #'
 #' @return an object of class internal_validate containing apparent and bias-corrected
 #' estimates of performance scores. If method = "boot_*" it also contains results pertaining
@@ -112,7 +108,7 @@
 #' @references Harrell Jr F. E. (2015). Regression Modeling Strategies: with applications to linear models, logistic and ordinal regression, and survival analysis. New York: Springer Science, LLC.
 #' @references Efron (1983). “Estimating the error rate of a prediction rule: improvement on cross-validation”. Journal of the American Statistical Association, 78(382):316-331
 #' @references Van Calster, B., Steyerberg, E. W., Wynants, L., and van Smeden, M. (2023). There is no such thing as a validated prediction model. BMC medicine, 21(1), 70.
-#' @references Riley RD, Collins GS. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biom J. doi:10.1002/bimj.202200302. Epub ahead of print.
+#' @references Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302
 #'
 #' @export
 #' @examples

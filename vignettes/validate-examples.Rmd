@@ -1,8 +1,8 @@
 ---
-title: "More `model_fun` examples for `pminternal::validate`"
+title: "More examples"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{More `model_fun` examples for `pminternal::validate`}
+  %\VignetteIndexEntry{More examples}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -107,8 +107,7 @@ lognet_fun <- function(data, ...){
   } else{
     alpha <- 0
   }
-  # cat("Using alpha =", alpha, "\n")
-  
+
   y <- data$y
   x <- data[, c('sex', 'age', 'hyp', 'htn', 'hrt', 'pmi', 'ste')]
   x$sex <- as.numeric(x$sex == "male")

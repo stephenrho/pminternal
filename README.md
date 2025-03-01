@@ -10,16 +10,16 @@ The goal is to offer a package that can produce bias-corrected
 performance measures for clinical prediction models with binary outcomes
 for a range of model development approaches available in R (similar to
 `rms::validate`). There are also functions for assessing prediction
-stability as described here <https://doi.org/10.1002/bimj.202200302>.
+stability, as described in [Riley and Collins
+(2023)](https://doi.org/10.1002/bimj.202200302).
 
-To install development version:
+To install:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("stephenrho/pminternal")
+install.packages("pminternal") # cran
+# or 
+devtools::install_github("stephenrho/pminternal") # development
 ```
-
-Please send feedback to <steverho89@gmail.com> or open an issue.
 
 ## Example
 

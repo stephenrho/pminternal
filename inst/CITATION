@@ -1,0 +1,9 @@
+citHeader("To cite the 'pminternal' R package in publications, please use:")
+
+bibentry(bibtype = "Manual",
+         title = "pminternal: Internal validation of clinical prediction models",
+         author  = person(given = "Stephen", family = "Rhodes"),
+         year = "2025",
+         note = "R package version 0.1.0",
+         url = "https://stephenrho.github.io/pminternal/"
+)

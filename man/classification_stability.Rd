@@ -19,7 +19,7 @@ classification_stability(
 )
 }
 \arguments{
-\item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
+\item{x}{an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")}
 
 \item{threshold}{estimated risks above the threshold get a predicted 'class' of 1, otherwise 0.}
 

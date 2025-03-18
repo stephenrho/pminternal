@@ -25,8 +25,8 @@ devtools::install_github("stephenrho/pminternal") # development
 
 In the example below we use bootstrapping to correct performance
 measures for a `glm` via calculation of ‘optimism’ (see
-`vignette("pminternal")` and `vignette("validate-examples")` for more
-examples):
+`vignette("pminternal")`, `vignette("validate-examples")`, and
+`vignette("missing-data")` for more examples):
 
 ``` r
 library(pminternal)
@@ -65,8 +65,8 @@ are the simple bootstrap (`boot_simple`), 0.632 bootstrap optimism
 (`.632`), optimism via cross-validation (`cv_optimism`), and regular
 cross-validation (`cv_average`). Please see `?pminternal::validate` and
 the references therein. Bias corrected calibration curves can also be
-produced (see `cal_plot`). Confidence intervals can also be added via
-`confint`.
+produced (see `pminternal::cal_plot`). Confidence intervals can also be
+added via `confint`.
 
 For models that cannot be supported via `fit`, users are able to specify
 their own model (`model_fun`) and prediction (`pred_fun`) functions as

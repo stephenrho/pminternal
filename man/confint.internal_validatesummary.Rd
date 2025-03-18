@@ -40,16 +40,16 @@ A list with two elements, each a matrix with columns giving lower and upper conf
 Columns will be labelled as (1-level)/2 and 1 - (1-level)/2 in \% (by default 2.5\% and 97.5\%).
 }
 \description{
-Implements the methods discussed in Noma et al. (2021) plus some others that have been less tested.
+Implements the methods discussed in Noma et al. (2021), plus some others that have not been tested.
 Specifically, Noma et al. discuss bootstrap optimism correction ("boot_optimism" and ".632") and the percentile
 bootstrap (\code{ci_type = "perc"}). Their paper contains some simulation results on coverage properties of these
 CIs. If you used \code{\link{validate}} to do something other than bootstrap optimism correction or if you request
 normal approximation CIs please note that these approaches have (to my knowledge) not been thoroughly tested.
 \code{ci_type = "norm"} is included as it might be able to reduce the number of runs needed for "twostage" CIs.
 See details for the difference between "shifted" and "twostage". "norm" CIs are likely to perform poorly for some
-performance measures, such as calibration Intercept and Slope which for regular glms are always 0 and 1, respectively,
+performance measures, such as calibration Intercept and Slope, which for regular glms are always 0 and 1, respectively,
 on assessment of apparent performance. As "shifted" CIs are based on apparent performance they will be meaningless for these measures.
-Use the unevaluated methods with caution!
+Use the untested methods with caution!
 }
 \details{
 The two methods are as follows (see Noma et al. (2021) for more details):
@@ -61,8 +61,8 @@ is [lower - optimism, upper - optimism]. Note this method is only available when
 (and "cv_optimism" was untested in Noma et al).}
 \item{twostage}{This approach creates a bootstrap resample of the data and runs the entire
 validation procedure on the resample (with the same number of 'inner' replicates, determined by B in the original
-validate call. The CIs is then constructed using the corrected estimates from the R 'outer' replicates.
-As this involves R*B replicates this could take a long time. Note \code{\link{validate}}
+validate call). The CI is then constructed using the corrected estimates from the R 'outer' replicates.
+As this involves R*B replicates, this could take a long time. Note \code{\link{validate}}
 takes a \code{cores} argument that can allow the inner samples to run in parallel. }
 }
 }

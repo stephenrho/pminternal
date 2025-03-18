@@ -34,7 +34,7 @@
 #' This function should return a named vector of scores. If unspecified \code{\link{score_binary}}
 #' is used and this should be good for most purposes.
 #' @param B number of bootstrap replicates or crossvalidation folds. If unspecified B is set to
-#' 200 for method = "boot_\*"/".632", or is set to 10 for method = "cv_\*".
+#' 200 for method = "boot_*"/".632", or is set to 10 for method = "cv_*".
 #' @param ... additional arguments for user-defined functions. Arguments for
 #' producing calibration curves can be set via 'calib_args' which should be
 #' a named list (see \code{\link{cal_plot}} and \code{\link{score_binary}}).
@@ -42,10 +42,10 @@
 #' \code{cores} argument (e.g., \code{cores = 4}) to run bootstrap samples in parallel.
 #'
 #' @details
-#' Internal validation can provide bias-corrected estimates of performance (e.g., C-statistic/AUC)
+#' Internal validation can provide bias-corrected estimates of performance (e.g., C-statistic/AUC, calibration intercept/slope)
 #' for a model development procedure (i.e., expected performance if the same procedure were applied
 #' to another sample of the same size from the same population; see references). There are several approaches to producing
-#' bias-corrected estimates (see below). It is important that the fit or model_fun provided implement
+#' bias-corrected estimates (see below). It is important that the \code{fit} or \code{model_fun} provided implement
 #' the entire model development procedure, including any hyperparameter tuning and/or variable selection.
 #'
 #' Note that \code{\link{validate}} does very little to check for missing values in predictors/features. If \code{fit} is
@@ -91,7 +91,7 @@
 #' If the \code{model_fun} produces an error or if \code{score_binary} is supplied with constant predictions
 #' or outcomes (e.g. all(y == 0)) the returned scores will all be NA. These will be omitted from the calculation
 #' of optimism or other bias-corrected estimates (cv_average, boot_simple) and the number of successful resamples/folds
-#' will be < B. \code{validate} collects errors and will produce a warning summarizing them. The number of successful
+#' will be < B. \code{validate} collects error messages and will produce a warning summarizing them. The number of successful
 #' samples is given in the 'n' column in the printed summary of an 'internal_validate' object.
 #'
 #' It is important to understand what is causing the loss of resamples/folds. Some potential sources (which will need to be added to) are that
@@ -319,6 +319,8 @@ summary.internal_validate <- function(object, ignore_scores="^cal_plot", ...){
                  by="row.names", all.x=TRUE)
     row.names(out) <- out$Row.names
     out$Row.names <- NULL
+    # reorder
+    out <- out[ names(object$apparent[i]), ]
     colnames(out) <- c("apparent", "optimism", "corrected", "n", "corrected_lower", "corrected_upper")
 
   } else{

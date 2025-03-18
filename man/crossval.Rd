@@ -17,7 +17,7 @@ crossval(data, outcome, model_fun, pred_fun, score_fun, k = 10, ...)
 
 \item{score_fun}{a function to calculate the metrics of interest. If this is not specified \code{\link{score_binary}} is used.}
 
-\item{k}{number of folds. Typically scores need >> 2 observations to be calculated so folds should be chosen with this in mind.}
+\item{k}{number of folds. Typically scores need greater than 2 observations to be calculated so folds should be chosen with this in mind.}
 
 \item{...}{additional arguments for \code{model_fun}, \code{pred_fun}, and/or \code{score_fun}.}
 }

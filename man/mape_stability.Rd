@@ -7,7 +7,7 @@
 mape_stability(x, xlim, ylim, xlab, ylab, pch, cex, col, subset, plot = TRUE)
 }
 \arguments{
-\item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
+\item{x}{an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")}
 
 \item{xlim}{x limits (default = range of estimated risks)}
 

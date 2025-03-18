@@ -11,7 +11,7 @@
 #' @param model_fun a function that takes at least one argument, \code{data}. This function should implement the entire model development procedure (i.e., hyperparameter tuning, variable selection, imputation). Additional arguments can be provided via \code{...}. This function should return an object that works with \code{pred_fun}.
 #' @param pred_fun function that takes at least two arguments, \code{model} and \code{data}. This function should return a numeric vector of predicted probabilities of the outcome with the same length as the number of rows in \code{data} so it is important to take into account how missing data is treated (e.g., \code{predict.glm} omits predictions for rows with missing values).
 #' @param score_fun a function to calculate the metrics of interest. If this is not specified \code{\link{score_binary}} is used.
-#' @param k number of folds. Typically scores need >> 2 observations to be calculated so folds should be chosen with this in mind.
+#' @param k number of folds. Typically scores need greater than 2 observations to be calculated so folds should be chosen with this in mind.
 #' @param ... additional arguments for \code{model_fun}, \code{pred_fun}, and/or \code{score_fun}.
 #'
 #' @return a list of class \code{internal_cv} containing:

@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-In developing a clinical prediction model measures of model performance are biased by the fact that we're using the same data to fit ('train') the model as evaluate it. Splitting data into development and validation sets is inefficient. Bootstrapping or cross-validation can be used to estimate bias-corrected measures of model performance. This is known as 'internal validation' and addresses the question: what is the expected performance of a model developed in the same way in a sample selected from the same population? This is not to be confused with 'external validation' which assesses model performance in a different population.
+In developing a clinical prediction model measures of model performance are biased by the fact that we're using the same data to fit ('train') the model as evaluate it. Splitting data into development and validation sets is inefficient. Bootstrapping or cross-validation can be used to estimate bias-corrected measures of model performance. This is known as 'internal validation' and addresses the question: what is the expected performance of a model developed in the same way in a sample selected from the same population? This is not to be confused with 'external validation' which assesses model performance in a different population or setting.
 
 `pminternal` is inspired by the functions `validate` and `predab.resample` from the `rms` package. The aim is to provide a package that will work with any user-defined model development procedure (assuming it can be implemented in an R function). The package also implements more recently proposed 'stability plots'. Currently only binary outcomes are supported but a goal is to eventually extend to other outcomes (survival, ordinal).
 
@@ -26,7 +26,7 @@ In developing a clinical prediction model measures of model performance are bias
 
 `validate` only needs a single argument to run, `fit`. `fit` should be a fitted model that is compatible with `insight::get_data`, `insight::find_response`, `insight::get_call`, and `marginaleffects::get_predict`. Models supported by insight can be found by running `insight::supported_models()` (or run `is_model_supported(fit)`); models supported by `marginaleffects` are here https://marginaleffects.com/bonus/supported_models.html. As we're dealing with binary outcomes, not all models listed will be applicable. 
 
-The code below loads the GUSTO-I trial data, selects relevant variables, subsets to reduce run time, fits a development model (a `glm`), and passes it to `validate`.
+The code below loads the GUSTO-I trial data, selects relevant variables, subsets to reduce run time, fits a model (a `glm`), and passes it to `validate` to produce optimism corrected performance metrics via bootstrap resampling.
 
 ```{r setup}
 library(pminternal)
@@ -36,9 +36,10 @@ getHdata("gusto")
 gusto <- gusto[, c("sex", "age", "hyp", "htn", "hrt", "pmi", "ste", "day30")]
 
 gusto$y <- gusto$day30; gusto$day30 <- NULL
+mean(gusto$y) # outcome rate
 
 set.seed(234)
-gusto <- gusto[sample(1:nrow(gusto), size = 5000),]
+gusto <- gusto[sample(1:nrow(gusto), size = 4000),]
 
 mod <- glm(y ~ ., data = gusto, family = "binomial")
 
@@ -65,7 +66,7 @@ mape$average_mape
 
 ```
 
-It is possible to get apparent and bias-corrected calibration curves. For this we need to set an additional argument, specifying where to assess the calibration curve (i.e., points on the x-axis) as follows.
+It is possible to get apparent and bias-corrected calibration curves. For this we need to set an additional argument, specifying where to assess the calibration curve (i.e., points on the x-axis) as follows. We can also select how calibration curves will be estimated. In this case we use a restricted cubic spline with 5 knots (see `pminternal::cal_defaults()` for the default settings).
 
 ```{r, fig.height=5, fig.width=6}
 # find 100 equally spaced points 
@@ -74,7 +75,12 @@ p <- predict(mod, type="response")
 
 p_range <- seq(min(p), max(p), length.out=100)
 
-mod_iv2 <- validate(mod, B = 20, calib_args=list(eval=p_range))
+mod_iv2 <- validate(mod, B = 20, 
+                    calib_args = list(
+                      eval=p_range, 
+                      smooth="rcs", 
+                      nk=5)
+                    )
 mod_iv2
 
 calp <- cal_plot(mod_iv2)
@@ -97,10 +103,16 @@ ggplot(calp, aes(x=predicted)) +
 
 ```
 
-Finally, bootstrap confidence intervals can be calculated (see https://onlinelibrary.wiley.com/doi/10.1002/sim.9148 and `confint.internal_validate` for details).
+Finally, bootstrap confidence intervals can be calculated (see https://onlinelibrary.wiley.com/doi/10.1002/sim.9148 and `pminternal::confint.internal_validate` for details).
 
 ```{r}
-(mod_iv <- confint(mod_iv, method = "shifted", R=100))
+(mod_iv2 <- confint(mod_iv2, method = "shifted", R=100))
+```
+
+And if confidence intervals are available they are plotted by `cal_plot` by default.
+
+```{r, fig.height=5, fig.width=6}
+cal_plot(mod_iv2, bc_col = "red")
 ```
 
 Additional models that could be supplied via `fit` and that I have tested on this gusto example are given below. Please let me know if you run into trouble with a model class that you feel should work with `fit`. The chunk below is not evaluated for build time so does not print any output.
@@ -122,11 +134,6 @@ mod <- gam(y ~ sex + s(age) + hyp + htn + hrt + pmi + ste,
 
 (gam_iv <- validate(mod, B = 20))
 
-mod <- bam(y ~ sex + s(age, bs = "cr") + hyp + htn + hrt + pmi + ste, 
-           data = gusto, family = "binomial")
-
-(bam_iv <- validate(mod, B = 20))
-
 ### rms implementation of logistic regression
 mod <- rms::lrm(y ~ ., data = gusto) 
 # not loading rms to avoid conflict with rms::validate...
@@ -141,7 +148,7 @@ It is important that what is being internally validated is the *entire model dev
 
 In the example below we work with a model that is not supported by `insight` or `marginaleffects`: logistic regression with lasso (L1) regularization. The functions we need to specify are `model_fun` and `pred_fun`. 
 
-- `model_fun` should take a single argument, `data`, and return and object that can be used to make predictions with `pred_fun`. `...` should also be added as an argument to allow for optional arguments passed to `validate` (see vignette("pminternal-examples") for more examples of user-defined functions that take optional arguments). `lasso_fun` formats data for `glmnet`, then selects the hyperparameter, `lambda` (controls the degree of regularization), via 10-fold cross-validation, and fits the final model with the 'best' value of `lambda` and returns.
+- `model_fun` should take a single argument, `data`, and return and object that can be used to make predictions with `pred_fun`. `...` should also be added as an argument to allow for optional arguments passed to `validate` (see `vignette("pminternal-examples")` for more examples of user-defined functions that take optional arguments). `lasso_fun` formats data for `glmnet`, then selects the hyperparameter, `lambda` (controls the degree of regularization), via 10-fold cross-validation, and fits the final model with the 'best' value of `lambda` and returns.
 - `pred_fun` should take two arguments, `model` and `data`, as well as the optional argument(s) `...`. `pred_fun` should work with the model object returned by `model_fun`. `glmnet` objects have their own `predict` method so the function `lasso_predict` simply formats the data and returns the predictions. `predict.glmnet` returns a matrix so we select the first column to return a vector of predicted risks.
 
 ```{r}
@@ -170,7 +177,7 @@ lasso_predict <- function(model, data, ...){
 }
 ```
 
-We recommend that you use `::` to refer to functions from particular packages if you want to run bootstrapping in parallel. For cores = 1 (or no cores argument supplied) or cross-validation this will not be an issue and you can use `library`. 
+We recommend that you use `::` to refer to functions from particular packages if you want to run bootstrapping in parallel. For cores = 1 (or no cores argument supplied) or cross-validation this will not be an issue. 
 
 The code below tests these functions out on `gusto`.
 

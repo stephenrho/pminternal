@@ -17,7 +17,7 @@ calibration_stability(
 )
 }
 \arguments{
-\item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
+\item{x}{an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")}
 
 \item{calib_args}{settings for calibration curve (see \code{pmcalibration::pmcalibration}). If unspecified settings
 are given by \code{\link{cal_defaults}} with 'eval' set to 100 (evaluate each curve at 100 points between min and max prediction).}
@@ -45,9 +45,9 @@ The first element of this list is the apparent curve (original model on original
 A calibration (in)stability plot shows calibration curves for bootstrap
 models evaluated on original outcome. A stable model should produce
 boot calibration curves that differ minimally from the 'apparent' curve.
-See Riley and Collins (2023).
 }
 \examples{
+\donttest{
 set.seed(456)
 # simulate data with two predictors that interact
 dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)
@@ -62,7 +62,7 @@ m1 <- glm(y ~ ., data=dat, family="binomial")
 m1_iv <- validate(m1, method="boot_optimism", B=10)
 
 calibration_stability(m1_iv)
-
+}
 }
 \references{
 Riley, R. D., & Collins, G. S. (2023). Stability of clinical prediction models developed using statistical or machine learning methods. Biometrical Journal, 65(8), 2200302. doi:10.1002/bimj.202200302

@@ -23,7 +23,7 @@
 #' \item{C}{the c-statistic (aka area under the ROC curve). Probability that randomly selected
 #' observation with y = 1 with have higher p compared to randomly selected y = 0.}
 #' \item{Brier}{mean squared error - mean((y - p)^2)}
-#' \item{Intercept}{Intercept from a logistic calibration model: glm(y ~ 1 + qlogis(p), family="binomial")}
+#' \item{Intercept}{Intercept from a logistic calibration model: glm(y ~ 1 + offset(qlogis(p)), family="binomial")}
 #' \item{Slope}{Slope from a logistic calibration model: glm(y ~ 1 + qlogis(p), family="binomial")}
 #' \item{Eavg}{average absolute difference between p and calibration curve
 #' (aka integrated calibration index or ICI).}

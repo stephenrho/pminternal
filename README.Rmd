@@ -30,7 +30,7 @@ devtools::install_github("stephenrho/pminternal") # development
 
 ## Example
 
-In the example below we use bootstrapping to correct performance measures for a `glm` via calculation of 'optimism' (see `vignette("pminternal")` and `vignette("validate-examples")` for more examples):
+In the example below we use bootstrapping to correct performance measures for a `glm` via calculation of 'optimism' (see `vignette("pminternal")`, `vignette("validate-examples")`, and `vignette("missing-data")` for more examples):
 
 ```{r example}
 library(pminternal)
@@ -54,7 +54,7 @@ mod <- glm(y ~ ., data = dat, family = "binomial")
 
 ```
 
-The other available methods for calculating bias corrected performance are the simple bootstrap (`boot_simple`), 0.632 bootstrap optimism (`.632`), optimism via cross-validation (`cv_optimism`), and regular cross-validation (`cv_average`). Please see `?pminternal::validate` and the references therein. Bias corrected calibration curves can also be produced (see `cal_plot`). Confidence intervals can also be added via `confint`.
+The other available methods for calculating bias corrected performance are the simple bootstrap (`boot_simple`), 0.632 bootstrap optimism (`.632`), optimism via cross-validation (`cv_optimism`), and regular cross-validation (`cv_average`). Please see `?pminternal::validate` and the references therein. Bias corrected calibration curves can also be produced (see `pminternal::cal_plot`). Confidence intervals can also be added via `confint`.
 
 For models that cannot be supported via `fit`, users are able to specify their own model (`model_fun`) and prediction (`pred_fun`) functions as shown below. Note that when specifying user-defined model and prediction functions the data and outcome must also be provided. It is crucial that `model_fun` implements the entire model development procedure (variable selection, hyperparameter tuning, etc). For more examples, see `vignette("pminternal")` and `vignette("validate-examples")`.
 

@@ -7,3 +7,5 @@ vignettes/pminternal-comparisons.Rmd
 ^pkgdown$
 ^\.github$
 ^vignettes/articles$
+^cran-comments\.md$
+^CRAN-SUBMISSION$

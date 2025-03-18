@@ -8,12 +8,12 @@
 #' @param data the data used in developing the model. Should contain all variables considered (i.e., even those excluded by variable selection in the development sample)
 #' @param outcome character denoting the column name of the outcome in \code{data}.
 #' @param model_fun a function that takes at least one argument, \code{data}. This function should implement the entire model development procedure (i.e., hyperparameter tuning, variable selection, imputation). Additional arguments can be provided via \code{...}. This function should return an object that works with \code{pred_fun}.
-#' @param pred_fun function that takes at least two arguments, \code{model} and \code{data}. This function should return a numeric vector of predicted probabilities of the outcome with the same length as the number of rows in \code{data} so it is important to take into account how missing data is treated (e.g., \code{predict.glm} omits predictions for rows with missing values).
+#' @param pred_fun function that takes at least two arguments, \code{model} and \code{data}. This function should return a numeric vector of predicted probabilities of the outcome with the same length as the number of rows in \code{data} so it is important to take into account how missing data is treated (e.g., \code{predict.glm} omits predictions for rows with missing values). see \code{vignette("missing-data", package = "pminternal")}.
 #' @param score_fun a function to calculate the metrics of interest. If this is not specified \code{\link{score_binary}} is used.
 #' @param method "boot" or ".632". The former estimates bootstrap optimism for each score and subtracts
-#' from apparent scores (simple bootstrap estimates are also produced as a by product).
+#' from apparent scores (simple bootstrap estimates are also produced as a by-product).
 #' The latter estimates ".632" optimism as described in Harrell (2015). See \code{\link{validate}} details.
-#' @param B number of bootstrap resamples to run (should be at least 200)
+#' @param B number of bootstrap resamples to run
 #' @param ... additional arguments for \code{model_fun}, \code{pred_fun}, and/or \code{score_fun}.
 #'
 #' @return a list of class \code{internal_boot} containing:
@@ -22,7 +22,7 @@
 #' \item{\code{optimism} - estimates of optimism for each score (average difference in score for bootstrap models evaluated on bootstrap vs original sample) which can be subtracted from 'apparent' performance calculated using the original model on the original data.}
 #' \item{\code{corrected} - 'bias corrected' scores (apparent - optimism)}
 #' \item{\code{simple} - if method = "boot", estimates of scores derived from the 'simple bootstrap'. This is the average of each score calculated from the bootstrap models evaluated on the original outcome data. NULL if method = ".632"}
-#' \item{\code{stability} - if method = "boot", a N,B matrix where N is the number of observations in \code{data} and \code{B} is the number of bootstrap samples. Each column contains the predicted probabilities of the outcome from each bootstrap model evaluated on the original data. NULL if method = ".632"}
+#' \item{\code{stability} - if method = "boot", a N,(B+1) matrix where N is the number of observations in \code{data} and \code{B} is the number of bootstrap samples. The first column contains the original predictions and each of subsequent B columns contain the predicted probabilities of the outcome from each bootstrap model evaluated on the original data. There may be fewer than B+1 columns if errors occur during resamples (when model_fun throws an error all scores are NA). NULL if method = ".632"}
 #' }
 #'
 #' @references Steyerberg, E. W., Harrell Jr, F. E., Borsboom, G. J., Eijkemans, M. J. C., Vergouwe, Y., & Habbema, J. D. F. (2001). Internal validation of predictive models: efficiency of some procedures for logistic regression analysis. Journal of clinical epidemiology, 54(8), 774-781.
@@ -38,8 +38,6 @@
 #' dat$LP <- NULL # remove linear predictor
 #'
 #' # fit a (misspecified) logistic regression model
-#' #m1 <- glm(y ~ x1 + x2, data=dat, family="binomial")
-#'
 #' model_fun <- function(data, ...){
 #'   glm(y ~ x1 + x2, data=data, family="binomial")
 #' }
@@ -62,8 +60,7 @@ boot_optimism <- function(data, outcome,
   if (missing(score_fun)){
     score_fun <- score_binary
   }
-  # TODO:
-  # - deal with model fit fails
+
   mf <- function(data, ...){
     tryCatch(expr = model_fun(data=data, ...),
              error = function(e) {

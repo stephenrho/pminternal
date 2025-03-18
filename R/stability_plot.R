@@ -7,7 +7,7 @@
 #' model evaluated on original data). A stable model should produce points that
 #' exhibit minimal dispersion. See Riley and Collins (2023).
 #'
-#' @param x an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")
+#' @param x an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")
 #' @param bounds width of the 'stability interval' (percentiles of the bootstrap model predictions). NULL = do not add bounds to plot.
 #' @param smooth_bounds if TRUE, use \code{loess} to smooth the bounds (default = FALSE)
 #' @param xlab a title for the x axis
@@ -93,9 +93,8 @@ prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
 #' A calibration (in)stability plot shows calibration curves for bootstrap
 #' models evaluated on original outcome. A stable model should produce
 #' boot calibration curves that differ minimally from the 'apparent' curve.
-#' See Riley and Collins (2023).
 #'
-#' @param x an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")
+#' @param x an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")
 #' @param calib_args settings for calibration curve (see \code{pmcalibration::pmcalibration}). If unspecified settings
 #' are given by \code{\link{cal_defaults}} with 'eval' set to 100 (evaluate each curve at 100 points between min and max prediction).
 #' @param xlim x limits (default = c(0,1))
@@ -115,6 +114,7 @@ prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' set.seed(456)
 #' # simulate data with two predictors that interact
 #' dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)
@@ -129,7 +129,7 @@ prediction_stability <- function(x, bounds=.95, smooth_bounds=FALSE,
 #' m1_iv <- validate(m1, method="boot_optimism", B=10)
 #'
 #' calibration_stability(m1_iv)
-#'
+#' }
 calibration_stability <- function(x, calib_args,
                                   xlim, ylim, xlab, ylab, col, subset, plot=TRUE){
 
@@ -207,7 +207,7 @@ calibration_stability <- function(x, calib_args,
 #' estimated risk and risk from B bootstrap models) as a function of apparent
 #' estimated risk (prediction from original/development model). See Riley and Collins (2023).
 #'
-#' @param x an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")
+#' @param x an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")
 #' @param xlim x limits (default = range of estimated risks)
 #' @param ylim y limits (default = c(0, maximum mape))
 #' @param xlab a title for the x axis
@@ -287,7 +287,7 @@ mape_stability <- function(x, xlim, ylim, xlab, ylab, pch, cex,
 #' elevated CII but an unstable model will exhibit high CII across a range of risk predictions.
 #' See Riley and Collins (2023).
 #'
-#' @param x an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")
+#' @param x an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")
 #' @param threshold estimated risks above the threshold get a predicted 'class' of 1, otherwise 0.
 #' @param xlim x limits (default = range of estimated risks)
 #' @param ylim y limits (default = c(0, maximum CII))
@@ -366,7 +366,7 @@ classification_stability <- function(x, threshold, xlim, ylim,
 #' curves that differ minimally from the 'apparent' curve.
 #' See Riley and Collins (2023).
 #'
-#' @param x an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")
+#' @param x an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")
 #' @param thresholds points at which to evaluate the decision curves (see \code{dcurves::dca})
 #' @param xlim x limits (default = range of thresholds)
 #' @param ylim y limits (default = range of net benefit)
@@ -385,6 +385,7 @@ classification_stability <- function(x, threshold, xlim, ylim,
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' set.seed(456)
 #' # simulate data with two predictors that interact
 #' dat <- pmcalibration::sim_dat(N = 2000, a1 = -2, a3 = -.3)
@@ -399,7 +400,7 @@ classification_stability <- function(x, threshold, xlim, ylim,
 #' m1_iv <- validate(m1, method="boot_optimism", B=10)
 #'
 #' dcurve_stability(m1_iv)
-#'
+#' }
 dcurve_stability <- function(x, thresholds = seq(0, .99, by=0.01),
                              xlim, ylim, xlab, ylab, col, subset, plot=TRUE){
 

@@ -20,7 +20,7 @@ prediction_stability(
 )
 }
 \arguments{
-\item{x}{an object produced by \code{\link{validate}} with method = "boot_\*" (or \code{\link{boot_optimism}} with method="boot")}
+\item{x}{an object produced by \code{\link{validate}} with method = "boot_*" (or \code{\link{boot_optimism}} with method="boot")}
 
 \item{bounds}{width of the 'stability interval' (percentiles of the bootstrap model predictions). NULL = do not add bounds to plot.}
 

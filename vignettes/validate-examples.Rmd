@@ -26,12 +26,12 @@ gusto <- gusto[, c("sex", "age", "hyp", "htn", "hrt", "pmi", "ste", "day30")]
 gusto$y <- gusto$day30; gusto$day30 <- NULL
 
 set.seed(234)
-gusto <- gusto[sample(1:nrow(gusto), size = 5000),]
+gusto <- gusto[sample(1:nrow(gusto), size = 4000),]
 ```
 
 ## Backward Selection
 
-The function below implements a model selected via backward elimination using AIC. 
+The function below implements glm variable selection via backward elimination using AIC. 
 
 ```{r}
 
@@ -127,7 +127,7 @@ validate(method = "cv_optimism", data = gusto,
 
 ## Elastic Net
 
-To implement a model with an elastic net penalty we need to add the steps to select `alpha`. The function below evaluates `nalpha` equally spaced values of `alpha` between 0 and 1 (inclusive) and selects the values `lambda` and `alpha` that result in the minimum CV binomial deviance (could be changed via `type.measure`). `nalpha` is an optional argument. Note we don't need a new predict function here so `ridge_predict` is used. To save build time the chunk below is not evaluated.
+To implement a model with an elastic net penalty we need to add the steps to select `alpha`. The function below evaluates `nalpha` equally spaced values of `alpha` between 0 and 1 (inclusive) and selects the values `lambda` and `alpha` that result in the minimum CV binomial deviance (this could be changed via `type.measure`). `nalpha` is an optional argument. Note we don't need a new predict function here so `ridge_predict` is used. To save build time the chunk below is not evaluated.
 
 ```{r, eval = F}
 enet_fun <- function(data, ...){
@@ -168,8 +168,6 @@ validate(method = "cv_optimism", data = gusto,
 In the example below we use the `ranger` package to create our `model_fun` and allow for optional arguments of `num.trees`, `max.depth`, and `min.node.size`; others could be added (see `?ranger`).
 
 ```{r}
-# library(ranger)
-
 rf_fun <- function(data, ...){
   
   dots <- list(...)
@@ -180,7 +178,7 @@ rf_fun <- function(data, ...){
   # best to make sure y is a factor where '1' is level 2
   data$y <- factor(data$y, levels = 0:1)
   
-  ranger::ranger(y~., data = data, probability = T, 
+  ranger::ranger(y~., data = data, probability = TRUE, 
                  num.trees = num.trees, 
                  max.depth = max.depth, 
                  min.node.size = min.node.size)

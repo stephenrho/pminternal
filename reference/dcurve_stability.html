@@ -72,7 +72,7 @@ See Riley and Collins (2023).</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>an object produced by <code><a href="validate.html">validate</a></code> with method = "boot_\*" (or <code><a href="boot_optimism.html">boot_optimism</a></code> with method="boot")</p></dd>
+<dd><p>an object produced by <code><a href="validate.html">validate</a></code> with method = "boot_*" (or <code><a href="boot_optimism.html">boot_optimism</a></code> with method="boot")</p></dd>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
@@ -120,7 +120,8 @@ The first element of this list is the apparent curve (original model on original
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">456</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">456</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># simulate data with two predictors that interact</span></span></span>
 <span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">pmcalibration</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pmcalibration/man/sim_dat.html" class="external-link">sim_dat</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">2000</span>, a1 <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>, a3 <span class="op">=</span> <span class="op">-</span><span class="fl">.3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">y</span><span class="op">)</span></span></span>
@@ -137,7 +138,7 @@ The first element of this list is the apparent curve (original model on original
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">dcurve_stability</span><span class="op">(</span><span class="va">m1_iv</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="dcurve_stability-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

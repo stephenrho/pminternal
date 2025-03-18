@@ -62,7 +62,7 @@
                         <h4 data-toc-skip class="author">Stephen
 Rhodes</h4>
             
-            <h4 data-toc-skip class="date">2025-03-07</h4>
+            <h4 data-toc-skip class="date">2025-03-18</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/stephenrho/pminternal/blob/main/vignettes/pminternal.Rmd" class="external-link"><code>vignettes/pminternal.Rmd</code></a></small>
       <div class="d-none name"><code>pminternal.Rmd</code></div>
@@ -82,7 +82,7 @@ known as ‘internal validation’ and addresses the question: what is the
 expected performance of a model developed in the same way in a sample
 selected from the same population? This is not to be confused with
 ‘external validation’ which assesses model performance in a different
-population.</p>
+population or setting.</p>
 <p><code>pminternal</code> is inspired by the functions
 <code>validate</code> and <code>predab.resample</code> from the
 <code>rms</code> package. The aim is to provide a package that will work
@@ -106,8 +106,9 @@ can be found by running <code><a href="https://easystats.github.io/insight/refer
 As we’re dealing with binary outcomes, not all models listed will be
 applicable.</p>
 <p>The code below loads the GUSTO-I trial data, selects relevant
-variables, subsets to reduce run time, fits a development model (a
-<code>glm</code>), and passes it to <code>validate</code>.</p>
+variables, subsets to reduce run time, fits a model (a
+<code>glm</code>), and passes it to <code>validate</code> to produce
+optimism corrected performance metrics via bootstrap resampling.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/stephenrho/pminternal" class="external-link">pminternal</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hbiostat.org/R/Hmisc/" class="external-link">Hmisc</a></span><span class="op">)</span></span>
@@ -121,9 +122,11 @@ variables, subsets to reduce run time, fits a development model (a
 <span><span class="va">gusto</span> <span class="op">&lt;-</span> <span class="va">gusto</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sex"</span>, <span class="st">"age"</span>, <span class="st">"hyp"</span>, <span class="st">"htn"</span>, <span class="st">"hrt"</span>, <span class="st">"pmi"</span>, <span class="st">"ste"</span>, <span class="st">"day30"</span><span class="op">)</span><span class="op">]</span></span>
 <span></span>
 <span><span class="va">gusto</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">gusto</span><span class="op">$</span><span class="va">day30</span>; <span class="va">gusto</span><span class="op">$</span><span class="va">day30</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">gusto</span><span class="op">$</span><span class="va">y</span><span class="op">)</span> <span class="co"># outcome rate</span></span>
+<span><span class="co">#&gt; [1] 0.06982611</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">234</span><span class="op">)</span></span>
-<span><span class="va">gusto</span> <span class="op">&lt;-</span> <span class="va">gusto</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gusto</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span>,<span class="op">]</span></span>
+<span><span class="va">gusto</span> <span class="op">&lt;-</span> <span class="va">gusto</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gusto</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">4000</span><span class="op">)</span>,<span class="op">]</span></span>
 <span></span>
 <span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">gusto</span>, family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
 <span></span>
@@ -131,15 +134,15 @@ variables, subsets to reduce run time, fits a development model (a
 <span><span class="co">#&gt; It is recommended that B &gt;= 200 for bootstrap validation</span></span>
 <span><span class="va">mod_iv</span></span>
 <span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
-<span><span class="co">#&gt; C           0.7996  0.00099   0.79860 20</span></span>
-<span><span class="co">#&gt; Brier       0.0599 -0.00046   0.06038 20</span></span>
-<span><span class="co">#&gt; Intercept   0.0000  0.01433  -0.01433 20</span></span>
-<span><span class="co">#&gt; Slope       1.0000  0.00824   0.99176 20</span></span>
-<span><span class="co">#&gt; Eavg        0.0039  0.00092   0.00293 20</span></span>
-<span><span class="co">#&gt; E50         0.0023  0.00123   0.00109 20</span></span>
-<span><span class="co">#&gt; E90         0.0076  0.00324   0.00438 20</span></span>
-<span><span class="co">#&gt; Emax        0.0927  0.03538   0.05729 20</span></span>
-<span><span class="co">#&gt; ECI         0.0052  0.00578  -0.00057 20</span></span></code></pre></div>
+<span><span class="co">#&gt; C           0.7983  0.00385   0.79446 20</span></span>
+<span><span class="co">#&gt; Brier       0.0603 -0.00063   0.06094 20</span></span>
+<span><span class="co">#&gt; Intercept   0.0000  0.00687  -0.00687 20</span></span>
+<span><span class="co">#&gt; Slope       1.0000  0.00837   0.99163 20</span></span>
+<span><span class="co">#&gt; Eavg        0.0023  0.00123   0.00108 20</span></span>
+<span><span class="co">#&gt; E50         0.0014  0.00107   0.00034 20</span></span>
+<span><span class="co">#&gt; E90         0.0044  0.00280   0.00160 20</span></span>
+<span><span class="co">#&gt; Emax        0.0447  0.04581  -0.00112 20</span></span>
+<span><span class="co">#&gt; ECI         0.0017  0.00704  -0.00530 20</span></span></code></pre></div>
 <p>As this <code>validate</code> call was run with
 <code>method = "boot_optimism"</code> we are able to assess model
 stability via the following calls. Note that these stability plots are
@@ -170,11 +173,13 @@ the necessary data to make these plots (see also
 <p><img src="pminternal_files/figure-html/unnamed-chunk-2-3.png" width="576"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mape</span><span class="op">$</span><span class="va">average_mape</span></span>
-<span><span class="co">#&gt; [1] 0.007446025</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.009233709</span></span></code></pre></div>
 <p>It is possible to get apparent and bias-corrected calibration curves.
 For this we need to set an additional argument, specifying where to
-assess the calibration curve (i.e., points on the x-axis) as
-follows.</p>
+assess the calibration curve (i.e., points on the x-axis) as follows. We
+can also select how calibration curves will be estimated. In this case
+we use a restricted cubic spline with 5 knots (see
+<code><a href="../reference/cal_defaults.html">pminternal::cal_defaults()</a></code> for the default settings).</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># find 100 equally spaced points </span></span>
 <span><span class="co"># between the lowest and highest risk prediction</span></span>
@@ -182,19 +187,24 @@ follows.</p>
 <span></span>
 <span><span class="va">p_range</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>, length.out<span class="op">=</span><span class="fl">100</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">mod_iv2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, B <span class="op">=</span> <span class="fl">20</span>, calib_args<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>eval<span class="op">=</span><span class="va">p_range</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">mod_iv2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, B <span class="op">=</span> <span class="fl">20</span>, </span>
+<span>                    calib_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>                      eval<span class="op">=</span><span class="va">p_range</span>, </span>
+<span>                      smooth<span class="op">=</span><span class="st">"rcs"</span>, </span>
+<span>                      nk<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span>
+<span>                    <span class="op">)</span></span>
 <span><span class="co">#&gt; It is recommended that B &gt;= 200 for bootstrap validation</span></span>
 <span><span class="va">mod_iv2</span></span>
 <span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
-<span><span class="co">#&gt; C           0.7996  0.00385   0.79574 20</span></span>
-<span><span class="co">#&gt; Brier       0.0599 -0.00068   0.06060 20</span></span>
-<span><span class="co">#&gt; Intercept   0.0000  0.04486  -0.04486 20</span></span>
-<span><span class="co">#&gt; Slope       1.0000  0.02473   0.97527 20</span></span>
-<span><span class="co">#&gt; Eavg        0.0039  0.00047   0.00338 20</span></span>
-<span><span class="co">#&gt; E50         0.0023  0.00158   0.00074 20</span></span>
-<span><span class="co">#&gt; E90         0.0076  0.00270   0.00492 20</span></span>
-<span><span class="co">#&gt; Emax        0.0927  0.03025   0.06242 20</span></span>
-<span><span class="co">#&gt; ECI         0.0052  0.00093   0.00428 20</span></span>
+<span><span class="co">#&gt; C           0.7983  0.00204    0.7963 20</span></span>
+<span><span class="co">#&gt; Brier       0.0603 -0.00096    0.0613 20</span></span>
+<span><span class="co">#&gt; Intercept   0.0000  0.02506   -0.0251 20</span></span>
+<span><span class="co">#&gt; Slope       1.0000  0.01743    0.9826 20</span></span>
+<span><span class="co">#&gt; Eavg        0.0068 -0.00061    0.0074 20</span></span>
+<span><span class="co">#&gt; E50         0.0063  0.00021    0.0060 20</span></span>
+<span><span class="co">#&gt; E90         0.0106 -0.00030    0.0109 20</span></span>
+<span><span class="co">#&gt; Emax        0.0820 -0.00523    0.0873 20</span></span>
+<span><span class="co">#&gt; ECI         0.0092 -0.00136    0.0105 20</span></span>
 <span></span>
 <span><span class="va">calp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cal_plot.html">cal_plot</a></span><span class="op">(</span><span class="va">mod_iv2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="pminternal_files/figure-html/unnamed-chunk-3-1.png" width="576"></p>
@@ -205,12 +215,12 @@ probabilities (stored in <code>p</code>) to show their distribution.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">calp</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     predicted    apparent bias_corrected</span></span>
-<span><span class="co">#&gt; 1 0.001639574 0.001092496    0.000854699</span></span>
-<span><span class="co">#&gt; 2 0.009714890 0.007787001    0.007759467</span></span>
-<span><span class="co">#&gt; 3 0.017790205 0.015366875    0.019001038</span></span>
-<span><span class="co">#&gt; 4 0.025865521 0.023634527    0.027067193</span></span>
-<span><span class="co">#&gt; 5 0.033940837 0.032389166    0.034308507</span></span>
-<span><span class="co">#&gt; 6 0.042016153 0.041466700    0.043179498</span></span>
+<span><span class="co">#&gt; 1 0.001661484 0.006418392    0.007972031</span></span>
+<span><span class="co">#&gt; 2 0.009484478 0.007824631    0.008528307</span></span>
+<span><span class="co">#&gt; 3 0.017307471 0.010911750    0.010198648</span></span>
+<span><span class="co">#&gt; 4 0.025130465 0.017945390    0.017133285</span></span>
+<span><span class="co">#&gt; 5 0.032953458 0.028541737    0.028377736</span></span>
+<span><span class="co">#&gt; 6 0.040776452 0.040675895    0.041411019</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
@@ -223,27 +233,30 @@ probabilities (stored in <code>p</code>) to show their distribution.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"Predicted Risk"</span>, y<span class="op">=</span><span class="st">"Estimated Risk"</span>, color<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p><img src="pminternal_files/figure-html/unnamed-chunk-4-1.png" width="576"></p>
 <p>Finally, bootstrap confidence intervals can be calculated (see <a href="https://onlinelibrary.wiley.com/doi/10.1002/sim.9148" class="external-link uri">https://onlinelibrary.wiley.com/doi/10.1002/sim.9148</a> and
-<code>confint.internal_validate</code> for details).</p>
+<code><a href="../reference/confint.internal_validatesummary.html">pminternal::confint.internal_validate</a></code> for details).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">(</span><span class="va">mod_iv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">mod_iv</span>, method <span class="op">=</span> <span class="st">"shifted"</span>, R<span class="op">=</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in newton(lsp = lsp, X = G$X, y = G$y, Eb = G$Eb, UrS = G$UrS, L = G$L,</span></span>
-<span><span class="co">#&gt; : Fitting terminated with step failure - check results carefully</span></span>
+<code class="sourceCode R"><span><span class="op">(</span><span class="va">mod_iv2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">mod_iv2</span>, method <span class="op">=</span> <span class="st">"shifted"</span>, R<span class="op">=</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           apparent optimism corrected  n corrected_lower corrected_upper</span></span>
-<span><span class="co">#&gt; Brier       0.0599 -0.00046   0.06038 20         0.05479          0.0646</span></span>
-<span><span class="co">#&gt; C           0.7996  0.00099   0.79860 20         0.77873          0.8188</span></span>
-<span><span class="co">#&gt; E50         0.0023  0.00123   0.00109 20        -0.00122          0.0089</span></span>
-<span><span class="co">#&gt; E90         0.0076  0.00324   0.00438 20        -0.00324          0.0332</span></span>
-<span><span class="co">#&gt; Eavg        0.0039  0.00092   0.00293 20        -0.00092          0.0137</span></span>
-<span><span class="co">#&gt; ECI         0.0052  0.00578  -0.00057 20        -0.00578          0.0560</span></span>
-<span><span class="co">#&gt; Emax        0.0927  0.03538   0.05729 20        -0.03534          0.5190</span></span>
-<span><span class="co">#&gt; Intercept   0.0000  0.01433  -0.01433 20        -0.01433         -0.0143</span></span>
-<span><span class="co">#&gt; Slope       1.0000  0.00824   0.99176 20         0.99176          0.9918</span></span></code></pre></div>
+<span><span class="co">#&gt; C           0.7983  0.00204    0.7963 20          0.7724           0.826</span></span>
+<span><span class="co">#&gt; Brier       0.0603 -0.00096    0.0613 20          0.0548           0.066</span></span>
+<span><span class="co">#&gt; Intercept   0.0000  0.02506   -0.0251 20         -0.0251          -0.025</span></span>
+<span><span class="co">#&gt; Slope       1.0000  0.01743    0.9826 20          0.9826           0.983</span></span>
+<span><span class="co">#&gt; Eavg        0.0068 -0.00061    0.0074 20          0.0039           0.013</span></span>
+<span><span class="co">#&gt; E50         0.0063  0.00021    0.0060 20          0.0026           0.011</span></span>
+<span><span class="co">#&gt; E90         0.0106 -0.00030    0.0109 20          0.0060           0.026</span></span>
+<span><span class="co">#&gt; Emax        0.0820 -0.00523    0.0873 20          0.0161           0.198</span></span>
+<span><span class="co">#&gt; ECI         0.0092 -0.00136    0.0105 20          0.0030           0.042</span></span></code></pre></div>
+<p>And if confidence intervals are available they are plotted by
+<code>cal_plot</code> by default.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cal_plot.html">cal_plot</a></span><span class="op">(</span><span class="va">mod_iv2</span>, bc_col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="pminternal_files/figure-html/unnamed-chunk-6-1.png" width="576"></p>
 <p>Additional models that could be supplied via <code>fit</code> and
 that I have tested on this gusto example are given below. Please let me
 know if you run into trouble with a model class that you feel should
 work with <code>fit</code>. The chunk below is not evaluated for build
 time so does not print any output.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### generalized boosted model with gbm</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gbm-developers/gbm" class="external-link">gbm</a></span><span class="op">)</span></span>
 <span><span class="co"># syntax y ~ . does not work with gbm</span></span>
@@ -259,11 +272,6 @@ time so does not print any output.</p>
 <span>           data <span class="op">=</span> <span class="va">gusto</span>, family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="op">(</span><span class="va">gam_iv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, B <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/bam.html" class="external-link">bam</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">s</a></span><span class="op">(</span><span class="va">age</span>, bs <span class="op">=</span> <span class="st">"cr"</span><span class="op">)</span> <span class="op">+</span> <span class="va">hyp</span> <span class="op">+</span> <span class="va">htn</span> <span class="op">+</span> <span class="va">hrt</span> <span class="op">+</span> <span class="va">pmi</span> <span class="op">+</span> <span class="va">ste</span>, </span>
-<span>           data <span class="op">=</span> <span class="va">gusto</span>, family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="op">(</span><span class="va">bam_iv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">mod</span>, B <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">### rms implementation of logistic regression</span></span>
 <span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu">rms</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">lrm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">gusto</span><span class="op">)</span> </span>
@@ -288,12 +296,13 @@ specify are <code>model_fun</code> and <code>pred_fun</code>.</p>
 <code>data</code>, and return and object that can be used to make
 predictions with <code>pred_fun</code>. <code>...</code> should also be
 added as an argument to allow for optional arguments passed to
-<code>validate</code> (see vignette(“pminternal-examples”) for more
-examples of user-defined functions that take optional arguments).
-<code>lasso_fun</code> formats data for <code>glmnet</code>, then
-selects the hyperparameter, <code>lambda</code> (controls the degree of
-regularization), via 10-fold cross-validation, and fits the final model
-with the ‘best’ value of <code>lambda</code> and returns.</li>
+<code>validate</code> (see <code>vignette("pminternal-examples")</code>
+for more examples of user-defined functions that take optional
+arguments). <code>lasso_fun</code> formats data for <code>glmnet</code>,
+then selects the hyperparameter, <code>lambda</code> (controls the
+degree of regularization), via 10-fold cross-validation, and fits the
+final model with the ‘best’ value of <code>lambda</code> and
+returns.</li>
 <li>
 <code>pred_fun</code> should take two arguments, <code>model</code>
 and <code>data</code>, as well as the optional argument(s)
@@ -304,7 +313,7 @@ have their own <code>predict</code> method so the function
 predictions. <code>predict.glmnet</code> returns a matrix so we select
 the first column to return a vector of predicted risks.</li>
 </ul>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#library(glmnet)</span></span>
 <span></span>
 <span><span class="va">lasso_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
@@ -331,9 +340,9 @@ the first column to return a vector of predicted risks.</li>
 <p>We recommend that you use <code>::</code> to refer to functions from
 particular packages if you want to run bootstrapping in parallel. For
 cores = 1 (or no cores argument supplied) or cross-validation this will
-not be an issue and you can use <code>library</code>.</p>
+not be an issue.</p>
 <p>The code below tests these functions out on <code>gusto</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lasso_app</span> <span class="op">&lt;-</span> <span class="fu">lasso_fun</span><span class="op">(</span><span class="va">gusto</span><span class="op">)</span></span>
 <span><span class="va">lasso_p</span> <span class="op">&lt;-</span> <span class="fu">lasso_predict</span><span class="op">(</span>model <span class="op">=</span> <span class="va">lasso_app</span>, data <span class="op">=</span> <span class="va">gusto</span><span class="op">)</span></span></code></pre></div>
 <p>They work as intended so we can pass these functions to
@@ -341,7 +350,7 @@ not be an issue and you can use <code>library</code>.</p>
 estimate optimism. Note that the 10-fold cross-validation to select the
 best value of <code>lambda</code> (i.e., hyperparameter tuning) is done
 on each fold performed by <code>validate</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># for calibration plot</span></span>
 <span><span class="va">eval</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">lasso_p</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">lasso_p</span><span class="op">)</span>, length.out<span class="op">=</span><span class="fl">100</span><span class="op">)</span></span>
 <span></span>
@@ -352,18 +361,18 @@ on each fold performed by <code>validate</code>.</p>
 <span></span>
 <span><span class="va">iv_lasso</span></span>
 <span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
-<span><span class="co">#&gt; C           0.7995 -0.00108     0.801 10</span></span>
-<span><span class="co">#&gt; Brier       0.0599  0.00000     0.060 10</span></span>
-<span><span class="co">#&gt; Intercept   0.0361  0.00069     0.035 10</span></span>
-<span><span class="co">#&gt; Slope       1.0171 -0.00675     1.024 10</span></span>
-<span><span class="co">#&gt; Eavg        0.0039 -0.00978     0.014 10</span></span>
-<span><span class="co">#&gt; E50         0.0028 -0.00517     0.008 10</span></span>
-<span><span class="co">#&gt; E90         0.0079 -0.02420     0.032 10</span></span>
-<span><span class="co">#&gt; Emax        0.0820 -0.09818     0.180 10</span></span>
-<span><span class="co">#&gt; ECI         0.0041 -0.07004     0.074 10</span></span>
+<span><span class="co">#&gt; C           0.7982  0.00053    0.7977 10</span></span>
+<span><span class="co">#&gt; Brier       0.0603  0.00000    0.0603 10</span></span>
+<span><span class="co">#&gt; Intercept   0.0362  0.00898    0.0272 10</span></span>
+<span><span class="co">#&gt; Slope       1.0173 -0.00657    1.0239 10</span></span>
+<span><span class="co">#&gt; Eavg        0.0023 -0.00977    0.0121 10</span></span>
+<span><span class="co">#&gt; E50         0.0019 -0.00567    0.0075 10</span></span>
+<span><span class="co">#&gt; E90         0.0047 -0.02296    0.0276 10</span></span>
+<span><span class="co">#&gt; Emax        0.0335 -0.05879    0.0923 10</span></span>
+<span><span class="co">#&gt; ECI         0.0011 -0.04708    0.0482 10</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/cal_plot.html">cal_plot</a></span><span class="op">(</span><span class="va">iv_lasso</span><span class="op">)</span></span></code></pre></div>
-<p><img src="pminternal_files/figure-html/unnamed-chunk-9-1.png" width="576"></p>
+<p><img src="pminternal_files/figure-html/unnamed-chunk-10-1.png" width="576"></p>
 <p>For more examples of user defined model functions (including elastic
 net and random forest) can be found in
 <code><a href="../articles/validate-examples.html">vignette("validate-examples")</a></code>.</p>
@@ -382,7 +391,7 @@ from <code>y</code> and <code>p</code>.</p>
 <code>threshold</code> that is used to calculate sensitivity and
 specificity. If <code>threshold</code> is not specified it is set to
 0.5.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sens_spec</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">p</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co"># this function supports an optional</span></span>
 <span>  <span class="co"># arg: threshold (set to .5 if not specified)</span></span>
@@ -410,12 +419,12 @@ from the beginning of this vignette and uses the <code>sens_spec</code>
 function to calculate bias-corrected sensitivity and specificity with a
 threshold of 0.2 (in this case assessing classification stability would
 be important).</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span>fit <span class="op">=</span> <span class="va">mod</span>, score_fun <span class="op">=</span> <span class="va">sens_spec</span>, threshold<span class="op">=</span><span class="fl">.2</span>,</span>
 <span>         method <span class="op">=</span> <span class="st">"cv_optimism"</span>, B <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;             apparent  optimism corrected  n</span></span>
-<span><span class="co">#&gt; Sensitivity     0.30  0.003906      0.30 10</span></span>
-<span><span class="co">#&gt; Specificity     0.94 -0.000044      0.94 10</span></span></code></pre></div>
+<span><span class="co">#&gt;             apparent optimism corrected  n</span></span>
+<span><span class="co">#&gt; Sensitivity     0.31 0.003943      0.31 10</span></span>
+<span><span class="co">#&gt; Specificity     0.94 0.000015      0.94 10</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

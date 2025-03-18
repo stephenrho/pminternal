@@ -87,11 +87,11 @@ be supported by the <code>fit</code> argument.</p>
 <span><span class="va">gusto</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">gusto</span><span class="op">$</span><span class="va">day30</span>; <span class="va">gusto</span><span class="op">$</span><span class="va">day30</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">234</span><span class="op">)</span></span>
-<span><span class="va">gusto</span> <span class="op">&lt;-</span> <span class="va">gusto</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gusto</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span>,<span class="op">]</span></span></code></pre></div>
+<span><span class="va">gusto</span> <span class="op">&lt;-</span> <span class="va">gusto</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gusto</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">4000</span><span class="op">)</span>,<span class="op">]</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="backward-selection">Backward Selection<a class="anchor" aria-label="anchor" href="#backward-selection"></a>
 </h2>
-<p>The function below implements a model selected via backward
+<p>The function below implements glm variable selection via backward
 elimination using AIC.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
@@ -107,15 +107,15 @@ elimination using AIC.</p>
 <span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">gusto</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, model_fun <span class="op">=</span> <span class="va">stepglm</span>, </span>
 <span>         pred_fun <span class="op">=</span> <span class="va">steppred</span>, method <span class="op">=</span> <span class="st">"cv_opt"</span>, B <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
-<span><span class="co">#&gt; C           0.7996 -0.00099   0.80058 10</span></span>
-<span><span class="co">#&gt; Brier       0.0599  0.00000   0.05992 10</span></span>
-<span><span class="co">#&gt; Intercept   0.0000  0.00074  -0.00074 10</span></span>
-<span><span class="co">#&gt; Slope       1.0000 -0.00669   1.00669 10</span></span>
-<span><span class="co">#&gt; Eavg        0.0039 -0.00878   0.01263 10</span></span>
-<span><span class="co">#&gt; E50         0.0023 -0.00486   0.00717 10</span></span>
-<span><span class="co">#&gt; E90         0.0076 -0.02234   0.02996 10</span></span>
-<span><span class="co">#&gt; Emax        0.0927 -0.04619   0.13887 10</span></span>
-<span><span class="co">#&gt; ECI         0.0052 -0.05976   0.06497 10</span></span></code></pre></div>
+<span><span class="co">#&gt; C           0.7983  0.00056    0.7977 10</span></span>
+<span><span class="co">#&gt; Brier       0.0603  0.00000    0.0603 10</span></span>
+<span><span class="co">#&gt; Intercept   0.0000  0.00891   -0.0089 10</span></span>
+<span><span class="co">#&gt; Slope       1.0000 -0.00654    1.0065 10</span></span>
+<span><span class="co">#&gt; Eavg        0.0023 -0.00994    0.0122 10</span></span>
+<span><span class="co">#&gt; E50         0.0014 -0.00577    0.0072 10</span></span>
+<span><span class="co">#&gt; E90         0.0044 -0.02360    0.0280 10</span></span>
+<span><span class="co">#&gt; Emax        0.0447 -0.05162    0.0963 10</span></span>
+<span><span class="co">#&gt; ECI         0.0017 -0.04705    0.0488 10</span></span></code></pre></div>
 <p>In this situation it is probably best to stick with <code>lrm</code>,
 <code>fastbw</code>, and <code>validate</code> from the <code>rms</code>
 package (though note differences with default <code>step</code>
@@ -159,15 +159,15 @@ lasso (L1) penalization. It is simple to modify this to implement ridge
 <span>         outcome <span class="op">=</span> <span class="st">"y"</span>, model_fun <span class="op">=</span> <span class="va">ridge_fun</span>, </span>
 <span>         pred_fun <span class="op">=</span> <span class="va">ridge_predict</span>, B <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
-<span><span class="co">#&gt; C           0.7998 -0.00080    0.8006 10</span></span>
-<span><span class="co">#&gt; Brier       0.0599  0.00000    0.0599 10</span></span>
-<span><span class="co">#&gt; Intercept   0.2035 -0.00099    0.2045 10</span></span>
-<span><span class="co">#&gt; Slope       1.0955 -0.00726    1.1027 10</span></span>
-<span><span class="co">#&gt; Eavg        0.0060 -0.00548    0.0115 10</span></span>
-<span><span class="co">#&gt; E50         0.0054 -0.00250    0.0079 10</span></span>
-<span><span class="co">#&gt; E90         0.0129 -0.01298    0.0259 10</span></span>
-<span><span class="co">#&gt; Emax        0.0484 -0.06032    0.1088 10</span></span>
-<span><span class="co">#&gt; ECI         0.0052 -0.04496    0.0501 10</span></span>
+<span><span class="co">#&gt; C           0.7986   0.0006    0.7980 10</span></span>
+<span><span class="co">#&gt; Brier       0.0603   0.0000    0.0603 10</span></span>
+<span><span class="co">#&gt; Intercept   0.2049   0.0062    0.1987 10</span></span>
+<span><span class="co">#&gt; Slope       1.0966  -0.0073    1.1039 10</span></span>
+<span><span class="co">#&gt; Eavg        0.0052  -0.0080    0.0132 10</span></span>
+<span><span class="co">#&gt; E50         0.0046  -0.0043    0.0089 10</span></span>
+<span><span class="co">#&gt; E90         0.0115  -0.0172    0.0287 10</span></span>
+<span><span class="co">#&gt; Emax        0.0157  -0.0879    0.1035 10</span></span>
+<span><span class="co">#&gt; ECI         0.0040  -0.0581    0.0621 10</span></span>
 <span></span>
 <span><span class="co"># the use of package::function in user defined functions </span></span>
 <span><span class="co"># is especially important if you want to run </span></span>
@@ -215,8 +215,8 @@ evaluated so no output is printed.</p>
 steps to select <code>alpha</code>. The function below evaluates
 <code>nalpha</code> equally spaced values of <code>alpha</code> between
 0 and 1 (inclusive) and selects the values <code>lambda</code> and
-<code>alpha</code> that result in the minimum CV binomial deviance
-(could be changed via <code>type.measure</code>). <code>nalpha</code> is
+<code>alpha</code> that result in the minimum CV binomial deviance (this
+could be changed via <code>type.measure</code>). <code>nalpha</code> is
 an optional argument. Note we don’t need a new predict function here so
 <code>ridge_predict</code> is used. To save build time the chunk below
 is not evaluated.</p>
@@ -261,9 +261,7 @@ our <code>model_fun</code> and allow for optional arguments of
 <code>min.node.size</code>; others could be added (see
 <code>?ranger</code>).</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># library(ranger)</span></span>
-<span></span>
-<span><span class="va">rf_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">rf_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
 <span>  <span class="va">dots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span>  <span class="va">num.trees</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="st">"num.trees"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dots</span><span class="op">)</span><span class="op">)</span> <span class="va">dots</span><span class="op">[[</span><span class="st">"num.trees"</span><span class="op">]</span><span class="op">]</span> <span class="kw">else</span> <span class="fl">500</span></span>
@@ -273,7 +271,7 @@ our <code>model_fun</code> and allow for optional arguments of
 <span>  <span class="co"># best to make sure y is a factor where '1' is level 2</span></span>
 <span>  <span class="va">data</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">y</span>, levels <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span></span>
 <span>  </span>
-<span>  <span class="fu">ranger</span><span class="fu">::</span><span class="fu"><a href="http://imbs-hl.github.io/ranger/reference/ranger.html" class="external-link">ranger</a></span><span class="op">(</span><span class="va">y</span><span class="op">~</span><span class="va">.</span>, data <span class="op">=</span> <span class="va">data</span>, probability <span class="op">=</span> <span class="cn">T</span>, </span>
+<span>  <span class="fu">ranger</span><span class="fu">::</span><span class="fu"><a href="http://imbs-hl.github.io/ranger/reference/ranger.html" class="external-link">ranger</a></span><span class="op">(</span><span class="va">y</span><span class="op">~</span><span class="va">.</span>, data <span class="op">=</span> <span class="va">data</span>, probability <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>                 num.trees <span class="op">=</span> <span class="va">num.trees</span>, </span>
 <span>                 max.depth <span class="op">=</span> <span class="va">max.depth</span>, </span>
 <span>                 min.node.size <span class="op">=</span> <span class="va">min.node.size</span><span class="op">)</span></span>
@@ -287,30 +285,30 @@ our <code>model_fun</code> and allow for optional arguments of
 <span>         outcome <span class="op">=</span> <span class="st">"y"</span>, model_fun <span class="op">=</span> <span class="va">rf_fun</span>, </span>
 <span>         pred_fun <span class="op">=</span> <span class="va">rf_predict</span>, B <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
-<span><span class="co">#&gt; C            0.962  0.00028     0.961 10</span></span>
-<span><span class="co">#&gt; Brier        0.045  0.00000     0.045 10</span></span>
-<span><span class="co">#&gt; Intercept    3.611 -0.07983     3.691 10</span></span>
-<span><span class="co">#&gt; Slope        3.068 -0.06321     3.132 10</span></span>
-<span><span class="co">#&gt; Eavg         0.055 -0.00080     0.056 10</span></span>
-<span><span class="co">#&gt; E50          0.031  0.00021     0.031 10</span></span>
-<span><span class="co">#&gt; E90          0.058 -0.02028     0.078 10</span></span>
-<span><span class="co">#&gt; Emax         0.570  0.01875     0.551 10</span></span>
-<span><span class="co">#&gt; ECI          1.118 -0.03597     1.154 10</span></span>
+<span><span class="co">#&gt; C            0.970  0.00057     0.969 10</span></span>
+<span><span class="co">#&gt; Brier        0.044  0.00000     0.044 10</span></span>
+<span><span class="co">#&gt; Intercept    3.838 -0.14053     3.979 10</span></span>
+<span><span class="co">#&gt; Slope        3.246 -0.09513     3.341 10</span></span>
+<span><span class="co">#&gt; Eavg         0.057 -0.00395     0.061 10</span></span>
+<span><span class="co">#&gt; E50          0.031 -0.00260     0.034 10</span></span>
+<span><span class="co">#&gt; E90          0.067 -0.02725     0.094 10</span></span>
+<span><span class="co">#&gt; Emax         0.555  0.03954     0.515 10</span></span>
+<span><span class="co">#&gt; ECI          1.196 -0.08622     1.283 10</span></span>
 <span></span>
 <span><span class="co"># instead of unlimited tree depth...</span></span>
 <span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"cv_optimism"</span>, data <span class="op">=</span> <span class="va">gusto</span>, </span>
 <span>         outcome <span class="op">=</span> <span class="st">"y"</span>, model_fun <span class="op">=</span> <span class="va">rf_fun</span>, </span>
 <span>         pred_fun <span class="op">=</span> <span class="va">rf_predict</span>, B <span class="op">=</span> <span class="fl">10</span>, max.depth <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           apparent  optimism corrected  n</span></span>
-<span><span class="co">#&gt; C            0.816  0.000045     0.816 10</span></span>
-<span><span class="co">#&gt; Brier        0.060  0.000000     0.060 10</span></span>
-<span><span class="co">#&gt; Intercept    2.251 -0.038992     2.290 10</span></span>
-<span><span class="co">#&gt; Slope        2.006 -0.029097     2.035 10</span></span>
-<span><span class="co">#&gt; Eavg         0.031 -0.001476     0.032 10</span></span>
-<span><span class="co">#&gt; E50          0.023 -0.001076     0.024 10</span></span>
-<span><span class="co">#&gt; E90          0.055  0.005539     0.049 10</span></span>
-<span><span class="co">#&gt; Emax         0.390  0.057331     0.333 10</span></span>
-<span><span class="co">#&gt; ECI          0.217 -0.053952     0.271 10</span></span></code></pre></div>
+<span><span class="co">#&gt;           apparent optimism corrected  n</span></span>
+<span><span class="co">#&gt; C            0.821  0.00096     0.820 10</span></span>
+<span><span class="co">#&gt; Brier        0.061  0.00000     0.061 10</span></span>
+<span><span class="co">#&gt; Intercept    2.276  0.00267     2.273 10</span></span>
+<span><span class="co">#&gt; Slope        2.026 -0.00982     2.035 10</span></span>
+<span><span class="co">#&gt; Eavg         0.031 -0.00352     0.035 10</span></span>
+<span><span class="co">#&gt; E50          0.023 -0.00113     0.024 10</span></span>
+<span><span class="co">#&gt; E90          0.054 -0.00468     0.059 10</span></span>
+<span><span class="co">#&gt; Emax         0.390  0.06376     0.326 10</span></span>
+<span><span class="co">#&gt; ECI          0.229 -0.09231     0.321 10</span></span></code></pre></div>
 <p><br><br><br></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

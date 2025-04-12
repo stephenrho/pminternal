@@ -164,10 +164,20 @@ boot_optimism <- function(data, outcome,
   qboot <- purrr::quietly(boot)
 
   cl <- parallel::makeCluster(cores)
-  parallel::clusterExport(cl, varlist = c("B", "data", "indices", "wt", "method",
-                                          "model_fun", "pred_fun", "score_fun",
-                                          "mf", "ef", "boot", "qboot"),
+  # make all loaded packages available
+  pkgs <- .packages()
+
+  varlist <- c("B", "data", "indices", "wt", "method",
+               "model_fun", "pred_fun", "score_fun",
+               "mf", "ef", "boot", "qboot", "pkgs")
+
+  if ("export" %in% names(dots)) varlist <- c(varlist, dots[["export"]])
+
+  parallel::clusterExport(cl, varlist = varlist,
                           envir = environment())
+  # load packages
+  parallel::clusterEvalQ(cl, expr = sapply(pkgs, library, character.only = TRUE))
+
   S <- pbapply::pblapply(seq(B), FUN = qboot, cl = cl)
   parallel::stopCluster(cl)
   #closeAllConnections()

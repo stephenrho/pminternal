@@ -127,6 +127,10 @@
 #' m1_iv <- validate(m1, method="boot_optimism", B=10)
 #' m1_iv
 #'
+#' library(rms)
+#' m2 <- lrm(y ~ ., data=dat)
+#' m2_iv <- pminternal::validate(m2, method="boot_optimism", B=10)
+#'
 validate <- function(fit,
                      method=c("boot_optimism", "boot_simple",
                               ".632", "cv_optimism", "cv_average", "none"),

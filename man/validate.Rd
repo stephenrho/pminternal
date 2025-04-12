@@ -146,6 +146,10 @@ m1 <- glm(y ~ ., data=dat, family="binomial")
 m1_iv <- validate(m1, method="boot_optimism", B=10)
 m1_iv
 
+library(rms)
+m2 <- lrm(y ~ ., data=dat)
+m2_iv <- pminternal::validate(m2, method="boot_optimism", B=10)
+
 }
 \references{
 Steyerberg, E. W., Harrell Jr, F. E., Borsboom, G. J., Eijkemans, M. J. C., Vergouwe, Y., & Habbema, J. D. F. (2001). Internal validation of predictive models: efficiency of some procedures for logistic regression analysis. Journal of clinical epidemiology, 54(8), 774-781.

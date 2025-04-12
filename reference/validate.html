@@ -15,7 +15,7 @@ are provided. See confint.internal_validate for calculation of confidence interv
 
     <a class="navbar-brand me-2" href="../index.html">pminternal</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@ are provided. See confint.internal_validate for calculation of confidence interv
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Get bias-corrected performance measures via bootstrapping or cross-validation</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stephenrho/pminternal/blob/v0.1.0/R/validate.R" class="external-link"><code>R/validate.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stephenrho/pminternal/blob/main/R/validate.R" class="external-link"><code>R/validate.R</code></a></small>
       <div class="d-none name"><code>validate.Rd</code></div>
     </div>
 
@@ -239,6 +239,22 @@ of calibration curves and may be addressed by more carefully selecting settings 
 <span class="r-out co"><span class="r-pr">#&gt;</span> E90         0.0115  0.00882    0.0027 10</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Emax        0.0580  0.07771   -0.0197 10</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ECI         0.0110  0.03656   -0.0256 10</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hbiostat.org/R/rms/" class="external-link">rms</a></span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: Hmisc</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Attaching package: ‘Hmisc’</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> The following objects are masked from ‘package:base’:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     format.pval, units</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Attaching package: ‘rms’</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> The following object is masked from ‘package:pminternal’:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>     validate</span>
+<span class="r-in"><span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/rms/man/lrm.html" class="external-link">lrm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">.</span>, data<span class="op">=</span><span class="va">dat</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">m2_iv</span> <span class="op">&lt;-</span> <span class="fu">pminternal</span><span class="fu">::</span><span class="fu">validate</span><span class="op">(</span><span class="va">m2</span>, method<span class="op">=</span><span class="st">"boot_optimism"</span>, B<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> It is recommended that B &gt;= 200 for bootstrap validation</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

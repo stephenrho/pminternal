@@ -163,23 +163,28 @@ boot_optimism <- function(data, outcome,
 
   qboot <- purrr::quietly(boot)
 
-  cl <- parallel::makeCluster(cores)
-  # make all loaded packages available
-  pkgs <- .packages()
+  if (cores > 1){
+    cl <- parallel::makeCluster(cores)
+    # make all loaded packages available
+    pkgs <- .packages()
 
-  varlist <- c("B", "data", "indices", "wt", "method",
-               "model_fun", "pred_fun", "score_fun",
-               "mf", "ef", "boot", "qboot", "pkgs")
+    varlist <- c("B", "data", "indices", "wt", "method",
+                 "model_fun", "pred_fun", "score_fun",
+                 "mf", "ef", "boot", "qboot", "pkgs")
 
-  if ("export" %in% names(dots)) varlist <- c(varlist, dots[["export"]])
+    if ("export" %in% names(dots)) varlist <- c(varlist, dots[["export"]])
 
-  parallel::clusterExport(cl, varlist = varlist,
-                          envir = environment())
-  # load packages
-  parallel::clusterEvalQ(cl, expr = sapply(pkgs, library, character.only = TRUE))
-
+    parallel::clusterExport(cl, varlist = varlist,
+                            envir = environment())
+    # load packages
+    parallel::clusterEvalQ(cl, expr = sapply(pkgs, library, character.only = TRUE))
+  } else {
+    cl <- NULL # sequential eval
+  }
   S <- pbapply::pblapply(seq(B), FUN = qboot, cl = cl)
-  parallel::stopCluster(cl)
+  if (!is.null(cl)) {
+    parallel::stopCluster(cl)
+  }
   #closeAllConnections()
 
   # extrct warnings/messages
